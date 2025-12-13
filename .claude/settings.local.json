@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "10x-rules"
+  ],
+  "enableAllProjectMcpServers": true
+}

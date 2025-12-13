@@ -6,30 +6,33 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-  // Create Supabase client
+  // Get access token from Authorization header
+  const authHeader = context.request.headers.get("Authorization");
+  const accessToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : null;
+
+  // Create Supabase client with access token in headers for RLS to work
   const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       flowType: "pkce",
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
+      autoRefreshToken: false,
       persistSession: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
     },
   });
 
-  // Get access token from Authorization header
-  const authHeader = context.request.headers.get("Authorization");
+  // Validate user if token provided
   let user = null;
-
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.substring(7);
-    const { data, error } = await supabase.auth.getUser(token);
+  if (accessToken) {
+    const { data, error } = await supabase.auth.getUser(accessToken);
     if (!error && data.user) {
       user = data.user;
-      // Set the session for RLS to work
-      await supabase.auth.setSession({
-        access_token: token,
-        refresh_token: "",
-      });
     }
   }
 

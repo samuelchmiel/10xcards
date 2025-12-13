@@ -1,6 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh issue:*)",
+      "Bash(gh label create:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "10x-rules"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

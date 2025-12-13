@@ -399,6 +399,34 @@ curl -X DELETE http://localhost:3000/api/decks/DECK_ID \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
+### List flashcards
+```bash
+curl -X GET "http://localhost:3000/api/flashcards?deck_id=DECK_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Create flashcard
+```bash
+curl -X POST http://localhost:3000/api/flashcards \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"deck_id": "DECK_ID", "front": "What is JavaScript?", "back": "A programming language"}'
+```
+
+### Update flashcard
+```bash
+curl -X PUT http://localhost:3000/api/flashcards/FLASHCARD_ID \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"front": "Updated question", "back": "Updated answer"}'
+```
+
+### Delete flashcard
+```bash
+curl -X DELETE http://localhost:3000/api/flashcards/FLASHCARD_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
 ---
 
 ## Implementation Files

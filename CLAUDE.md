@@ -313,3 +313,157 @@ When implementing features:
 2. **Summarize** what was done
 3. **Describe** plan for next 3 steps
 4. **Wait** for feedback before continuing
+
+---
+
+## Git Workflow - Issue-Driven Development
+
+### Branch Naming Convention
+
+```
+feature/issue-{number}-{short-description}
+fix/issue-{number}-{short-description}
+refactor/issue-{number}-{short-description}
+```
+
+### Issue → Branch → PR Cycle
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CLAUDE (implementation):                                    │
+│  1. gh issue view {number}         # Read issue details     │
+│  2. git checkout -b feature/...    # Create branch          │
+│  3. [Implement with Workflow 3x3]  # Code changes           │
+│  4. git add . && git commit        # Commit changes         │
+│  5. git push -u origin {branch}    # Push branch            │
+│  6. gh pr create                   # Create PR              │
+│  7. STOP - return PR URL           # Wait for review        │
+├─────────────────────────────────────────────────────────────┤
+│  YOU (review on GitHub):                                     │
+│  8. Review changes in PR           # Check code             │
+│  9. Approve OR Request changes     # Give feedback          │
+│  10. Merge PR (or ask Claude)      # Complete               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### GitHub CLI Commands
+
+```bash
+# Issues
+gh issue list                          # List open issues
+gh issue view {number}                 # Read issue details
+gh issue create --title "..." --body "..."
+
+# Pull Requests
+gh pr create --title "..." --body "closes #{number}"
+gh pr list                             # List open PRs
+gh pr view {number}                    # View PR details
+gh pr diff {number}                    # Show PR diff
+gh pr checks {number}                  # Check CI status
+
+# After your approval (only when instructed)
+gh pr merge {number} --squash          # Merge PR
+```
+
+### PR Review Scenarios
+
+**Scenario A: Approved - you merge on GitHub**
+```
+Claude: PR created: https://github.com/user/repo/pull/3
+You: [Review on GitHub → Approve → Click "Merge"]
+You: "Next issue"
+```
+
+**Scenario B: Approved - Claude merges**
+```
+Claude: PR created: https://github.com/user/repo/pull/3
+You: [Review on GitHub → Approve]
+You: "Merge PR #3"
+Claude: $ gh pr merge 3 --squash
+        $ git checkout main && git pull
+```
+
+**Scenario C: Changes requested**
+```
+Claude: PR created: https://github.com/user/repo/pull/3
+You: [Add comments on GitHub requesting changes]
+You: "Read PR #3 comments and fix the issues"
+Claude: $ gh pr view 3 --comments
+        [Makes fixes, commits, pushes to same branch]
+        "Changes pushed. PR updated."
+You: [Review again → Approve → Merge]
+```
+
+### Commit Messages (Conventional Commits)
+
+```bash
+feat(scope): description     # New feature
+fix(scope): description      # Bug fix
+docs(scope): description     # Documentation
+test(scope): description     # Tests
+chore(scope): description    # Maintenance
+
+# Scopes: api, ui, auth, db, ai, test, ci
+```
+
+### PR Description Template
+
+```markdown
+## Summary
+Brief description of changes.
+
+## Changes
+- Added X
+- Updated Y
+- Fixed Z
+
+## Testing
+- [ ] Manual testing done
+- [ ] Unit tests pass
+
+closes #{issue_number}
+```
+
+### IMPORTANT: Claude MUST stop after creating PR
+
+After `gh pr create`, Claude must:
+1. Return the PR URL
+2. Wait for user instruction
+3. **Never auto-merge**
+
+User decides:
+- Review and merge on GitHub, OR
+- Say "Merge PR #X" for Claude to merge, OR
+- Request changes via GitHub comments
+
+---
+
+## Project Issues
+
+All project issues are defined in `.ai/issues.md`.
+
+**Create issues on GitHub:**
+```
+"Read .ai/issues.md and create all issues on GitHub"
+```
+
+**Implement an issue:**
+```
+"Implement issue #3"
+```
+
+**After PR review:**
+```
+"Merge PR #3"           # If approved
+"Fix PR #3 comments"    # If changes requested
+```
+
+### Implementation Order
+
+```
+#1 Bootstrap → #2 Database → #3 Decks API → #4 Flashcards API
+     ↓
+#5 Auth UI → #6 Dashboard UI → #7 AI Generation
+     ↓
+#8 Tests → #9 CI/CD → #10 Deployment
+```

@@ -1,4 +1,5 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Test credentials from environment variables
 const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Deck, Flashcard } from "@/db/database.types";
+import type { Deck, Flashcard, UserQuotaInfo } from "@/db/database.types";
 import { DeckList } from "./DeckList";
 import { DeckForm } from "./DeckForm";
 import { FlashcardList } from "./FlashcardList";
@@ -17,6 +17,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [decksLoading, setDecksLoading] = useState(true);
   const [flashcardsLoading, setFlashcardsLoading] = useState(false);
+  const [quota, setQuota] = useState<UserQuotaInfo | null>(null);
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
@@ -31,6 +32,18 @@ export function Dashboard({ accessToken }: DashboardProps) {
     },
     [accessToken]
   );
+
+  const loadQuota = useCallback(async () => {
+    try {
+      const response = await fetchWithAuth("/api/user/quota");
+      if (response.ok) {
+        const { data } = await response.json();
+        setQuota(data);
+      }
+    } catch {
+      // Silently handle quota loading errors
+    }
+  }, [fetchWithAuth]);
 
   const loadDecks = useCallback(async () => {
     setDecksLoading(true);
@@ -67,7 +80,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
   useEffect(() => {
     loadDecks();
-  }, [loadDecks]);
+    loadQuota();
+  }, [loadDecks, loadQuota]);
 
   useEffect(() => {
     if (selectedDeck) {
@@ -159,6 +173,9 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
     const { data } = await response.json();
     setFlashcards((prev) => [...data, ...prev]);
+
+    // Refresh quota after successful generation
+    loadQuota();
   };
 
   return (
@@ -178,6 +195,33 @@ export function Dashboard({ accessToken }: DashboardProps) {
           />
         </div>
         <DeckForm onSubmit={handleCreateDeck} />
+        {/* AI Generation Quota */}
+        {quota && (
+          <div className="p-3 border-t" data-testid="sidebar-quota">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">AI Generations</span>
+              <span
+                className={`font-medium ${
+                  quota.remaining <= 0
+                    ? "text-destructive"
+                    : quota.remaining <= 5
+                      ? "text-yellow-600"
+                      : "text-foreground"
+                }`}
+              >
+                {quota.remaining}/{quota.limit}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  quota.remaining <= 0 ? "bg-destructive" : quota.remaining <= 5 ? "bg-yellow-500" : "bg-primary"
+                }`}
+                style={{ width: `${(quota.remaining / quota.limit) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Main Content - Flashcards */}
@@ -191,7 +235,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <FlashcardForm onSubmit={handleCreateFlashcard} />
-              <AIGenerateForm onGenerate={handleGenerateFlashcards} />
+              <AIGenerateForm onGenerate={handleGenerateFlashcards} quota={quota} />
             </div>
 
             <Separator />

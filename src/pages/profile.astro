@@ -1,27 +1,32 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { Dashboard as DashboardComponent } from "@/components/dashboard/Dashboard";
+import { ProfilePage } from "@/components/profile/ProfilePage";
 
 const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/login");
+}
+
 const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
 ---
 
-<Layout title="Dashboard - 10xCards">
-  <div class="min-h-screen bg-background" data-testid="dashboard">
-    <header class="border-b h-[73px]">
+<Layout title="Profile - 10xCards">
+  <div class="min-h-screen bg-background" data-testid="profile">
+    <header class="border-b">
       <div class="container mx-auto px-4 py-4 flex items-center justify-between">
         <div class="flex items-center gap-6">
-          <h1 class="text-2xl font-bold">10xCards</h1>
+          <a href="/dashboard" class="text-2xl font-bold hover:opacity-80 transition-opacity">10xCards</a>
           <nav class="flex items-center gap-4">
-            <a href="/dashboard" class="text-sm font-medium text-foreground" data-testid="nav-dashboard"> Dashboard </a>
             <a
-              href="/profile"
+              href="/dashboard"
               class="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-profile"
+              data-testid="nav-dashboard"
             >
-              Profile
+              Dashboard
             </a>
+            <a href="/profile" class="text-sm font-medium text-foreground" data-testid="nav-profile"> Profile </a>
           </nav>
         </div>
         <div class="flex items-center gap-4">
@@ -30,6 +35,6 @@ const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
         </div>
       </div>
     </header>
-    <DashboardComponent client:load accessToken={accessToken} />
+    <ProfilePage client:load accessToken={accessToken} userEmail={user?.email ?? ""} />
   </div>
 </Layout>

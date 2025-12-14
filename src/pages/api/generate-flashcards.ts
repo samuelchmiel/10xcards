@@ -37,6 +37,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const { text, deck_id, count } = validation.data;
 
+  // Check user's AI generation quota
+  const { data: quotaData, error: quotaError } = await supabase.rpc("get_user_quota", {
+    p_user_id: user.id,
+  });
+
+  if (quotaError) {
+    return new Response(JSON.stringify({ error: "Failed to check quota" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const quota = quotaData?.[0];
+  if (quota && quota.remaining < count) {
+    return new Response(
+      JSON.stringify({
+        error: `AI generation limit reached. You have ${quota.remaining} generations remaining out of ${quota.limit_value} total.`,
+      }),
+      {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   // Verify deck ownership
   const { data: deck } = await supabase.from("decks").select("id").eq("id", deck_id).single();
 
@@ -77,6 +102,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Increment the user's AI generation count
+  const actualCount = data?.length || generatedFlashcards.length;
+  const { error: incrementError } = await supabase.rpc("increment_ai_generation_count", {
+    p_user_id: user.id,
+    p_count: actualCount,
+  });
+
+  if (incrementError) {
+    // Log but don't fail the request - flashcards were already created
+    console.error("Failed to increment quota:", incrementError.message);
   }
 
   return new Response(JSON.stringify({ data }), {

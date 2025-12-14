@@ -205,8 +205,12 @@ test.describe("User Flow", () => {
       await login(page);
 
       // Logout - wait for navigation to complete
+      await expect(page.getByTestId("logout-button")).toBeVisible();
+      await expect(page.getByTestId("logout-button")).toBeEnabled();
       await page.getByTestId("logout-button").click();
-      await page.waitForURL(/\/login/, { timeout: 15000 });
+      
+      // Wait for login page to load by checking for login form elements
+      await expect(page.getByTestId("email-input")).toBeVisible({ timeout: 15000 });
       await expect(page).toHaveURL(/\/login/);
     });
 
@@ -496,8 +500,12 @@ test.describe("User Flow", () => {
       await deleteDeck(page, deckName);
 
       // Logout - wait for navigation to complete
+      await expect(page.getByTestId("logout-button")).toBeVisible();
+      await expect(page.getByTestId("logout-button")).toBeEnabled();
       await page.getByTestId("logout-button").click();
-      await page.waitForURL(/\/login/, { timeout: 15000 });
+      
+      // Wait for login page to load by checking for login form elements
+      await expect(page.getByTestId("email-input")).toBeVisible({ timeout: 15000 });
       await expect(page).toHaveURL(/\/login/);
     });
   });

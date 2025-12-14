@@ -6,6 +6,7 @@ import { FlashcardList } from "./FlashcardList";
 import { FlashcardForm } from "./FlashcardForm";
 import { AIGenerateForm } from "./AIGenerateForm";
 import { AIPreviewDialog } from "./AIPreviewDialog";
+import { MiniStats } from "./MiniStats";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock } from "lucide-react";
@@ -296,6 +297,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
             </div>
           </div>
         )}
+        {/* Mini Stats Widget */}
+        <MiniStats accessToken={accessToken} />
       </aside>
 
       {/* Main Content - Flashcards */}

@@ -114,6 +114,104 @@ export interface Database {
           },
         ];
       };
+      study_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          deck_id: string;
+          started_at: string;
+          ended_at: string | null;
+          cards_studied: number;
+          cards_correct: number;
+          cards_incorrect: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          deck_id: string;
+          started_at?: string;
+          ended_at?: string | null;
+          cards_studied?: number;
+          cards_correct?: number;
+          cards_incorrect?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          deck_id?: string;
+          started_at?: string;
+          ended_at?: string | null;
+          cards_studied?: number;
+          cards_correct?: number;
+          cards_incorrect?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "study_sessions_deck_id_fkey";
+            columns: ["deck_id"];
+            referencedRelation: "decks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      card_reviews: {
+        Row: {
+          id: string;
+          flashcard_id: string;
+          user_id: string;
+          session_id: string | null;
+          rating: number;
+          time_to_answer: number | null;
+          reviewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          flashcard_id: string;
+          user_id: string;
+          session_id?: string | null;
+          rating: number;
+          time_to_answer?: number | null;
+          reviewed_at?: string;
+        };
+        Update: {
+          id?: string;
+          flashcard_id?: string;
+          user_id?: string;
+          session_id?: string | null;
+          rating?: number;
+          time_to_answer?: number | null;
+          reviewed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "card_reviews_flashcard_id_fkey";
+            columns: ["flashcard_id"];
+            referencedRelation: "flashcards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "card_reviews_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "card_reviews_session_id_fkey";
+            columns: ["session_id"];
+            referencedRelation: "study_sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<never, never>;
     Functions: {
@@ -155,4 +253,43 @@ export interface SM2Result {
   interval_days: number;
   repetitions: number;
   next_review_date: string;
+}
+
+// Study session types
+export type StudySession = Database["public"]["Tables"]["study_sessions"]["Row"];
+export type StudySessionInsert = Database["public"]["Tables"]["study_sessions"]["Insert"];
+export type StudySessionUpdate = Database["public"]["Tables"]["study_sessions"]["Update"];
+
+// Card review types
+export type CardReview = Database["public"]["Tables"]["card_reviews"]["Row"];
+export type CardReviewInsert = Database["public"]["Tables"]["card_reviews"]["Insert"];
+
+// Statistics types
+export interface UserStats {
+  totalSessions: number;
+  totalCardsReviewed: number;
+  totalCorrect: number;
+  totalIncorrect: number;
+  averageAccuracy: number;
+  studyStreak: number;
+  totalTimeStudied: number; // in minutes
+  reviewsToday: number;
+  reviewsThisWeek: number;
+}
+
+export interface DeckStats {
+  deckId: string;
+  deckName: string;
+  totalCards: number;
+  cardsDue: number;
+  cardsLearning: number; // repetitions < 3
+  cardsMastered: number; // repetitions >= 3
+  averageEasiness: number;
+}
+
+export interface ReviewsByDay {
+  date: string;
+  count: number;
+  correct: number;
+  incorrect: number;
 }

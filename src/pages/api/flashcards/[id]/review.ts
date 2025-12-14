@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     });
   }
 
-  const { rating } = validation.data;
+  const { rating, session_id, time_to_answer } = validation.data;
 
   // Get current flashcard data (with ownership check via RLS join)
   const { data: flashcard, error: fetchError } = await supabase
@@ -80,6 +80,15 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  // Log the review in card_reviews table for analytics
+  await supabase.from("card_reviews").insert({
+    flashcard_id: id,
+    user_id: user.id,
+    session_id: session_id || null,
+    rating,
+    time_to_answer: time_to_answer || null,
+  });
 
   return new Response(
     JSON.stringify({

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Shuffle, X, RotateCcw } from "lucide-react";
@@ -16,6 +16,7 @@ interface StudyFlashcard {
 }
 
 interface StudyModeProps {
+  deckId: string;
   deckName: string;
   flashcards: StudyFlashcard[];
   accessToken: string;
@@ -32,6 +33,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function StudyMode({
+  deckId,
   deckName,
   flashcards: initialFlashcards,
   accessToken,
@@ -43,10 +45,46 @@ export function StudyMode({
   const [isShuffled, setIsShuffled] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewedCount, setReviewedCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [incorrectCount, setIncorrectCount] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const cardStartTime = useRef<number>(Date.now());
 
   const currentCard = flashcards[currentIndex];
   const totalCards = flashcards.length;
   const hasCards = totalCards > 0;
+
+  // Start study session on mount
+  useEffect(() => {
+    if (!hasCards) return;
+
+    const startSession = async () => {
+      try {
+        const response = await fetch("/api/study-sessions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ deck_id: deckId }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSessionId(data.data.id);
+        }
+      } catch {
+        // Session tracking is optional, continue without it
+      }
+    };
+
+    startSession();
+  }, [deckId, accessToken, hasCards]);
+
+  // Reset card timer when changing cards
+  useEffect(() => {
+    cardStartTime.current = Date.now();
+  }, [currentIndex]);
 
   const handleFlip = useCallback(() => {
     setIsFlipped((prev) => !prev);
@@ -80,9 +118,29 @@ export function StudyMode({
     setIsShuffled(false);
   }, [initialFlashcards]);
 
-  const handleExit = useCallback(() => {
+  const handleExit = useCallback(async () => {
+    // End the study session with final stats
+    if (sessionId) {
+      try {
+        await fetch(`/api/study-sessions/${sessionId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            ended_at: new Date().toISOString(),
+            cards_studied: reviewedCount,
+            cards_correct: correctCount,
+            cards_incorrect: incorrectCount,
+          }),
+        });
+      } catch {
+        // Session update is optional
+      }
+    }
     window.location.assign("/dashboard");
-  }, []);
+  }, [sessionId, accessToken, reviewedCount, correctCount, incorrectCount]);
 
   const handleRate = useCallback(
     async (rating: ReviewRating) => {
@@ -90,20 +148,35 @@ export function StudyMode({
 
       setIsSubmittingReview(true);
       try {
+        // Calculate time to answer
+        const timeToAnswer = Date.now() - cardStartTime.current;
+
         const response = await fetch(`/api/flashcards/${currentCard.id}/review`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify({ rating }),
+          body: JSON.stringify({
+            rating,
+            session_id: sessionId,
+            time_to_answer: timeToAnswer,
+          }),
         });
 
         if (!response.ok) {
+          // eslint-disable-next-line no-console
           console.error("Failed to submit review");
         }
 
         setReviewedCount((prev) => prev + 1);
+
+        // Track correct/incorrect
+        if (rating >= 3) {
+          setCorrectCount((prev) => prev + 1);
+        } else {
+          setIncorrectCount((prev) => prev + 1);
+        }
 
         // Move to next card or finish
         if (currentIndex < totalCards - 1) {
@@ -114,12 +187,13 @@ export function StudyMode({
           handleExit();
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Error submitting review:", error);
       } finally {
         setIsSubmittingReview(false);
       }
     },
-    [currentCard, currentIndex, totalCards, accessToken, isSubmittingReview, handleExit]
+    [currentCard, currentIndex, totalCards, accessToken, isSubmittingReview, handleExit, sessionId]
   );
 
   // Keyboard navigation

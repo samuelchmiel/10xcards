@@ -1,19 +1,20 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { ProfilePage } from "@/components/profile/ProfilePage";
+import { Statistics } from "@/components/stats/Statistics";
+
+export const prerender = false;
 
 const user = Astro.locals.user;
+const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
 
 if (!user) {
   return Astro.redirect("/login");
 }
-
-const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
 ---
 
-<Layout title="Profile - 10xCards">
-  <div class="min-h-screen bg-background" data-testid="profile">
+<Layout title="Statistics - 10xCards">
+  <div class="min-h-screen bg-background" data-testid="stats-page">
     <header class="border-b">
       <div class="container mx-auto px-4 py-4 flex items-center justify-between">
         <div class="flex items-center gap-6">
@@ -26,14 +27,14 @@ const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
             >
               Dashboard
             </a>
+            <a href="/stats" class="text-sm font-medium text-foreground" data-testid="nav-stats"> Stats </a>
             <a
-              href="/stats"
+              href="/profile"
               class="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-stats"
+              data-testid="nav-profile"
             >
-              Stats
+              Profile
             </a>
-            <a href="/profile" class="text-sm font-medium text-foreground" data-testid="nav-profile"> Profile </a>
           </nav>
         </div>
         <div class="flex items-center gap-4">
@@ -42,6 +43,8 @@ const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
         </div>
       </div>
     </header>
-    <ProfilePage client:load accessToken={accessToken} userEmail={user?.email ?? ""} />
+    <main class="container mx-auto px-4 py-6 max-w-6xl">
+      <Statistics client:load accessToken={accessToken} />
+    </main>
   </div>
 </Layout>

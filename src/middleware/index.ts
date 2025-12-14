@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard", "/study", "/profile"];
+const PROTECTED_ROUTES = ["/dashboard", "/study", "/profile", "/stats"];
 
 // Routes that should redirect to dashboard if already authenticated
 const AUTH_ROUTES = ["/login"];

@@ -5,7 +5,14 @@ import { DeckForm } from "./DeckForm";
 import { FlashcardList } from "./FlashcardList";
 import { FlashcardForm } from "./FlashcardForm";
 import { AIGenerateForm } from "./AIGenerateForm";
+import { AIPreviewDialog } from "./AIPreviewDialog";
 import { Separator } from "@/components/ui/separator";
+
+interface PreviewFlashcard {
+  id: string;
+  front: string;
+  back: string;
+}
 
 interface DashboardProps {
   accessToken: string;
@@ -18,6 +25,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
   const [decksLoading, setDecksLoading] = useState(true);
   const [flashcardsLoading, setFlashcardsLoading] = useState(false);
   const [quota, setQuota] = useState<UserQuotaInfo | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewCards, setPreviewCards] = useState<PreviewFlashcard[]>([]);
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
@@ -196,7 +205,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
     const response = await fetchWithAuth("/api/generate-flashcards", {
       method: "POST",
-      body: JSON.stringify({ text, deck_id: selectedDeck.id, count }),
+      body: JSON.stringify({ text, deck_id: selectedDeck.id, count, preview: true }),
     });
 
     if (!response.ok) {
@@ -205,9 +214,32 @@ export function Dashboard({ accessToken }: DashboardProps) {
     }
 
     const { data } = await response.json();
-    setFlashcards((prev) => [...data, ...prev]);
+    setPreviewCards(data);
+    setPreviewDialogOpen(true);
+  };
 
-    // Refresh quota after successful generation
+  const handleSavePreviewCards = async (cards: { front: string; back: string }[]) => {
+    if (!selectedDeck) return;
+
+    const response = await fetchWithAuth("/api/flashcards/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        deck_id: selectedDeck.id,
+        flashcards: cards,
+        ai_generated: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to save flashcards");
+    }
+
+    const { data } = await response.json();
+    setFlashcards((prev) => [...data, ...prev]);
+    setPreviewCards([]);
+
+    // Refresh quota after successful save
     loadQuota();
   };
 
@@ -293,6 +325,13 @@ export function Dashboard({ accessToken }: DashboardProps) {
           </div>
         )}
       </main>
+
+      <AIPreviewDialog
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+        flashcards={previewCards}
+        onSave={handleSavePreviewCards}
+      />
     </div>
   );
 }

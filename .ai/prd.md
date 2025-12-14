@@ -62,8 +62,8 @@ As a result, users either create fewer flashcards than they need or give up on t
 | ID | User Story | Priority | Status |
 |----|------------|----------|--------|
 | US-030 | As a user, I want to paste text (up to 10,000 characters) and generate flashcards automatically, so that I can save time on manual creation. | Must Have | ✅ Implemented |
-| US-031 | As a user, I want to see generated flashcards before adding them to my deck, so that I can review and select only relevant ones. | Must Have | ⚠️ Partial (cards added directly) |
-| US-032 | As a user, I want to edit AI-generated flashcards before saving, so that I can adjust them to my needs. | Should Have | ❌ Not implemented |
+| US-031 | As a user, I want to see generated flashcards before adding them to my deck, so that I can review and select only relevant ones. | Must Have | ✅ Implemented |
+| US-032 | As a user, I want to edit AI-generated flashcards before saving, so that I can adjust them to my needs. | Should Have | ✅ Implemented |
 | US-033 | As a user, I want to see how many AI generations I have left, so that I can plan my usage. | Must Have | ✅ Implemented (lifetime limit) |
 
 ### Study Mode (Future)

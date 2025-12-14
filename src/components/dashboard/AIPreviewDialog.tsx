@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,16 +26,15 @@ interface AIPreviewDialogProps {
 }
 
 export function AIPreviewDialog({ open, onOpenChange, flashcards, onSave }: AIPreviewDialogProps) {
-  const [cards, setCards] = useState<(PreviewFlashcard & { selected: boolean })[]>(
-    flashcards.map((fc) => ({ ...fc, selected: true }))
-  );
+  const [cards, setCards] = useState<(PreviewFlashcard & { selected: boolean })[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset state when dialog opens with new flashcards
-  useState(() => {
+  // Reset state when flashcards prop changes (new generation)
+  useEffect(() => {
     setCards(flashcards.map((fc) => ({ ...fc, selected: true })));
-  });
+    setError(null);
+  }, [flashcards]);
 
   const handleToggleSelect = (id: string) => {
     setCards((prev) => prev.map((card) => (card.id === id ? { ...card, selected: !card.selected } : card)));

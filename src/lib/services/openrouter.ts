@@ -13,6 +13,9 @@ interface OpenRouterResponse {
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
+// OpenRouter model ID for Claude 3.5 Haiku
+const MODEL_ID = "anthropic/claude-3-5-haiku-latest";
+
 export async function generateFlashcardsFromText(
   text: string,
   count: number,
@@ -21,7 +24,7 @@ export async function generateFlashcardsFromText(
   const key = apiKey || import.meta.env.OPENROUTER_API_KEY;
 
   if (!key) {
-    throw new Error("OpenRouter API key is not configured");
+    throw new Error("OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable.");
   }
 
   const systemPrompt = `You are a flashcard generator. Given a text, create exactly ${count} flashcards that help someone learn the key concepts from the text.
@@ -44,7 +47,7 @@ Example response format:
       "X-Title": "10xCards",
     },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: MODEL_ID,
       messages: [
         { role: "system", content: systemPrompt },
         {
@@ -58,17 +61,31 @@ Example response format:
   });
 
   if (!response.ok) {
-    throw new Error(`AI generation failed: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`AI generation failed (${response.status}): ${errorText}`);
   }
 
   const data: OpenRouterResponse = await response.json();
+
+  // Check for API-level errors in the response
+  if ((data as unknown as { error?: { message?: string } }).error) {
+    const errorData = data as unknown as { error: { message: string } };
+    throw new Error(`AI API error: ${errorData.error.message}`);
+  }
+
   const content = data.choices[0]?.message?.content;
 
   if (!content) {
-    throw new Error("No response from AI");
+    throw new Error("No response from AI. The model may be unavailable.");
   }
 
-  return parseFlashcardsResponse(content);
+  const flashcards = parseFlashcardsResponse(content);
+
+  if (flashcards.length === 0) {
+    throw new Error("AI returned no flashcards. Please try with different text.");
+  }
+
+  return flashcards;
 }
 
 export function parseFlashcardsResponse(content: string): GeneratedFlashcard[] {

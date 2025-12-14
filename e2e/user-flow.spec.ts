@@ -316,8 +316,15 @@ test.describe("User Flow", () => {
       await createFlashcard(page, "Question 1", "Answer 1");
       await createFlashcard(page, "Question 2", "Answer 2");
 
-      // Wait for database propagation before navigating to study
-      await page.waitForTimeout(1000);
+      // Reload page to ensure SSR sees the new flashcards
+      log("Reloading page to refresh SSR data");
+      await page.reload();
+      await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
+
+      // Re-select the deck after reload
+      const deckItem = page.locator(`[data-testid^="deck-item-"]`).filter({ hasText: deckName });
+      await deckItem.click();
+      await expect(page.getByRole("heading", { level: 2, name: deckName })).toBeVisible({ timeout: 5000 });
 
       // Click study button (might be "Study All" now with spaced repetition)
       const studyButton = page.getByTestId("study-deck-button");
@@ -413,8 +420,15 @@ test.describe("User Flow", () => {
       await createFlashcard(page, "Capital of Japan?", "Tokyo");
       await createFlashcard(page, "Capital of Brazil?", "Brasilia");
 
-      // Wait for database propagation before navigating to study
-      await page.waitForTimeout(1000);
+      // Reload page to ensure SSR sees the new flashcards
+      log("Reloading page to refresh SSR data");
+      await page.reload();
+      await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
+
+      // Re-select the deck after reload
+      const deckItemJourney = page.locator(`[data-testid^="deck-item-"]`).filter({ hasText: deckName });
+      await deckItemJourney.click();
+      await expect(page.getByRole("heading", { level: 2, name: deckName })).toBeVisible({ timeout: 5000 });
 
       // Verify flashcard count in study button
       await expect(page.getByTestId("study-deck-button")).toContainText(/Study.*3/);

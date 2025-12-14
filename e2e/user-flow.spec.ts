@@ -208,7 +208,7 @@ test.describe("User Flow", () => {
       await expect(page.getByTestId("logout-button")).toBeVisible();
       await expect(page.getByTestId("logout-button")).toBeEnabled();
       await page.getByTestId("logout-button").click();
-      
+
       // Wait for login page to load by checking for login form elements
       await expect(page.getByTestId("email-input")).toBeVisible({ timeout: 15000 });
       await expect(page).toHaveURL(/\/login/);
@@ -503,7 +503,7 @@ test.describe("User Flow", () => {
       await expect(page.getByTestId("logout-button")).toBeVisible();
       await expect(page.getByTestId("logout-button")).toBeEnabled();
       await page.getByTestId("logout-button").click();
-      
+
       // Wait for login page to load by checking for login form elements
       await expect(page.getByTestId("email-input")).toBeVisible({ timeout: 15000 });
       await expect(page).toHaveURL(/\/login/);

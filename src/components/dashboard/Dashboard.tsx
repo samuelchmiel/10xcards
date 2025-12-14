@@ -158,6 +158,21 @@ export function Dashboard({ accessToken }: DashboardProps) {
     setFlashcards((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const handleEditFlashcard = async (id: string, front: string, back: string) => {
+    const response = await fetchWithAuth(`/api/flashcards/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ front, back }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to update flashcard");
+    }
+
+    const { data } = await response.json();
+    setFlashcards((prev) => prev.map((f) => (f.id === id ? data : f)));
+  };
+
   const handleGenerateFlashcards = async (text: string, count: number) => {
     if (!selectedDeck) return;
 
@@ -244,6 +259,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
               <h3 className="font-semibold mb-4">Flashcards ({flashcards.length})</h3>
               <FlashcardList
                 flashcards={flashcards}
+                onEditFlashcard={handleEditFlashcard}
                 onDeleteFlashcard={handleDeleteFlashcard}
                 loading={flashcardsLoading}
               />

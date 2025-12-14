@@ -54,7 +54,7 @@ As a result, users either create fewer flashcards than they need or give up on t
 | ID | User Story | Priority | Status |
 |----|------------|----------|--------|
 | US-020 | As a user, I want to manually add a flashcard with front and back text, so that I can create custom study material. | Must Have | ✅ Implemented |
-| US-021 | As a user, I want to edit an existing flashcard, so that I can correct mistakes or improve content. | Must Have | ❌ Not implemented |
+| US-021 | As a user, I want to edit an existing flashcard, so that I can correct mistakes or improve content. | Must Have | ✅ Implemented |
 | US-022 | As a user, I want to delete a flashcard, so that I can remove incorrect or outdated content. | Must Have | ✅ Implemented |
 
 ### AI Flashcard Generation

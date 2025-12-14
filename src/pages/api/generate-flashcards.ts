@@ -96,7 +96,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   });
 
   if (incrementError) {
-    console.error("Failed to increment quota:", incrementError.message);
+    // Quota increment failure is non-critical, continue with response
   }
 
   // If preview mode, return generated cards without saving

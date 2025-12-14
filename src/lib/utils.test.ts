@@ -49,11 +49,12 @@ describe("cn (className utility)", () => {
   });
 
   it("handles mixed inputs", () => {
+    const showConditional = true;
     const result = cn(
       "base",
       ["array-class"],
       { "object-class": true, "hidden-class": false },
-      true && "conditional"
+      showConditional && "conditional"
     );
     expect(result).toBe("base array-class object-class conditional");
   });

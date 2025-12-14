@@ -23,11 +23,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   // Get flashcard with deck info to verify ownership via RLS
-  const { data, error } = await supabase
-    .from("flashcards")
-    .select("*, decks!inner(id)")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("flashcards").select("*, decks!inner(id)").eq("id", id).single();
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -43,7 +39,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   // Remove the joined deck from response
-  const { decks: _, ...flashcard } = data;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { decks: _decks, ...flashcard } = data;
 
   return new Response(JSON.stringify({ data: flashcard }), {
     status: 200,
@@ -82,32 +79,22 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
   const validation = UpdateFlashcardSchema.safeParse(body);
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const updateData = validation.data;
   if (Object.keys(updateData).length === 0) {
-    return new Response(
-      JSON.stringify({ error: "No fields to update" }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "No fields to update" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Verify flashcard exists and user owns the deck (via RLS join)
-  const { data: existing } = await supabase
-    .from("flashcards")
-    .select("id, decks!inner(id)")
-    .eq("id", id)
-    .single();
+  const { data: existing } = await supabase.from("flashcards").select("id, decks!inner(id)").eq("id", id).single();
 
   if (!existing) {
     return new Response(JSON.stringify({ error: "Flashcard not found" }), {
@@ -116,12 +103,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from("flashcards")
-    .update(updateData)
-    .eq("id", id)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("flashcards").update(updateData).eq("id", id).select().single();
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -156,11 +138,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   }
 
   // Verify flashcard exists and user owns the deck (via RLS join)
-  const { data: existing } = await supabase
-    .from("flashcards")
-    .select("id, decks!inner(id)")
-    .eq("id", id)
-    .single();
+  const { data: existing } = await supabase.from("flashcards").select("id, decks!inner(id)").eq("id", id).single();
 
   if (!existing) {
     return new Response(JSON.stringify({ error: "Flashcard not found" }), {

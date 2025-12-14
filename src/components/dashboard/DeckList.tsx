@@ -20,13 +20,7 @@ interface DeckListProps {
   loading: boolean;
 }
 
-export function DeckList({
-  decks,
-  selectedDeckId,
-  onSelectDeck,
-  onDeleteDeck,
-  loading,
-}: DeckListProps) {
+export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, loading }: DeckListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -61,10 +55,7 @@ export function DeckList({
 
   if (decks.length === 0) {
     return (
-      <div
-        className="p-4 text-center text-muted-foreground"
-        data-testid="deck-list-empty"
-      >
+      <div className="p-4 text-center text-muted-foreground" data-testid="deck-list-empty">
         No decks yet. Create your first deck!
       </div>
     );
@@ -78,9 +69,7 @@ export function DeckList({
             <div
               key={deck.id}
               className={`group flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-colors ${
-                selectedDeckId === deck.id
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
+                selectedDeckId === deck.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
               }`}
               onClick={() => onSelectDeck(deck)}
               data-testid={`deck-item-${deck.id}`}
@@ -90,9 +79,7 @@ export function DeckList({
                 {deck.description && (
                   <p
                     className={`text-xs truncate ${
-                      selectedDeckId === deck.id
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
+                      selectedDeckId === deck.id ? "text-primary-foreground/70" : "text-muted-foreground"
                     }`}
                   >
                     {deck.description}
@@ -122,9 +109,8 @@ export function DeckList({
           <DialogHeader>
             <DialogTitle>Delete Deck</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deckToDelete?.name}"? This will
-              also delete all flashcards in this deck. This action cannot be
-              undone.
+              Are you sure you want to delete "{deckToDelete?.name}"? This will also delete all flashcards in this deck.
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

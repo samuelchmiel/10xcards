@@ -49,37 +49,27 @@ describe("parseFlashcardsResponse", () => {
 
   it("throws error for invalid JSON", () => {
     const input = "not valid json";
-    expect(() => parseFlashcardsResponse(input)).toThrow(
-      "Failed to parse AI response"
-    );
+    expect(() => parseFlashcardsResponse(input)).toThrow("Failed to parse AI response");
   });
 
   it("throws error for non-array response", () => {
     const input = '{"front": "Q", "back": "A"}';
-    expect(() => parseFlashcardsResponse(input)).toThrow(
-      "Failed to parse AI response"
-    );
+    expect(() => parseFlashcardsResponse(input)).toThrow("Failed to parse AI response");
   });
 
   it("throws error for flashcard missing front", () => {
     const input = '[{"back": "A"}]';
-    expect(() => parseFlashcardsResponse(input)).toThrow(
-      "Failed to parse AI response"
-    );
+    expect(() => parseFlashcardsResponse(input)).toThrow("Failed to parse AI response");
   });
 
   it("throws error for flashcard missing back", () => {
     const input = '[{"front": "Q"}]';
-    expect(() => parseFlashcardsResponse(input)).toThrow(
-      "Failed to parse AI response"
-    );
+    expect(() => parseFlashcardsResponse(input)).toThrow("Failed to parse AI response");
   });
 
   it("throws error for flashcard with non-string front", () => {
     const input = '[{"front": 123, "back": "A"}]';
-    expect(() => parseFlashcardsResponse(input)).toThrow(
-      "Failed to parse AI response"
-    );
+    expect(() => parseFlashcardsResponse(input)).toThrow("Failed to parse AI response");
   });
 
   it("handles empty array", () => {

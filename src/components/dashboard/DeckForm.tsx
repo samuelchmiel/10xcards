@@ -36,11 +36,7 @@ export function DeckForm({ onSubmit }: DeckFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-3 p-3 border-t"
-      data-testid="create-deck-form"
-    >
+    <form onSubmit={handleSubmit} className="space-y-3 p-3 border-t" data-testid="create-deck-form">
       <div className="space-y-1">
         <Label htmlFor="deck-name" className="text-xs">
           New Deck

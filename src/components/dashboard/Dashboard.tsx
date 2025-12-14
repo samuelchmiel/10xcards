@@ -51,9 +51,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
     async (deckId: string) => {
       setFlashcardsLoading(true);
       try {
-        const response = await fetchWithAuth(
-          `/api/flashcards?deck_id=${deckId}`
-        );
+        const response = await fetchWithAuth(`/api/flashcards?deck_id=${deckId}`);
         if (response.ok) {
           const { data } = await response.json();
           setFlashcards(data || []);
@@ -164,10 +162,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
   };
 
   return (
-    <div
-      className="flex flex-col md:flex-row h-[calc(100vh-73px)]"
-      data-testid="dashboard-content"
-    >
+    <div className="flex flex-col md:flex-row h-[calc(100vh-73px)]" data-testid="dashboard-content">
       {/* Sidebar - Deck List */}
       <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r flex flex-col bg-muted/30">
         <div className="p-3 border-b">
@@ -191,30 +186,18 @@ export function Dashboard({ accessToken }: DashboardProps) {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
-              {selectedDeck.description && (
-                <p className="text-muted-foreground mt-1">
-                  {selectedDeck.description}
-                </p>
-              )}
+              {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <FlashcardForm
-                deckId={selectedDeck.id}
-                onSubmit={handleCreateFlashcard}
-              />
-              <AIGenerateForm
-                deckId={selectedDeck.id}
-                onGenerate={handleGenerateFlashcards}
-              />
+              <FlashcardForm onSubmit={handleCreateFlashcard} />
+              <AIGenerateForm onGenerate={handleGenerateFlashcards} />
             </div>
 
             <Separator />
 
             <div>
-              <h3 className="font-semibold mb-4">
-                Flashcards ({flashcards.length})
-              </h3>
+              <h3 className="font-semibold mb-4">Flashcards ({flashcards.length})</h3>
               <FlashcardList
                 flashcards={flashcards}
                 onDeleteFlashcard={handleDeleteFlashcard}
@@ -223,15 +206,10 @@ export function Dashboard({ accessToken }: DashboardProps) {
             </div>
           </div>
         ) : (
-          <div
-            className="flex items-center justify-center h-full text-center"
-            data-testid="no-deck-selected"
-          >
+          <div className="flex items-center justify-center h-full text-center" data-testid="no-deck-selected">
             <div className="text-muted-foreground">
               <p className="text-lg mb-2">Select a deck to view flashcards</p>
-              <p className="text-sm">
-                Or create a new deck using the form in the sidebar
-              </p>
+              <p className="text-sm">Or create a new deck using the form in the sidebar</p>
             </div>
           </div>
         )}

@@ -3,20 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AIGenerateFormProps {
-  deckId: string;
   onGenerate: (text: string, count: number) => Promise<void>;
 }
 
-export function AIGenerateForm({ deckId, onGenerate }: AIGenerateFormProps) {
+export function AIGenerateForm({ onGenerate }: AIGenerateFormProps) {
   const [text, setText] = useState("");
   const [count, setCount] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -40,9 +33,7 @@ export function AIGenerateForm({ deckId, onGenerate }: AIGenerateFormProps) {
       await onGenerate(text.trim(), count);
       setText("");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate flashcards"
-      );
+      setError(err instanceof Error ? err.message : "Failed to generate flashcards");
     } finally {
       setLoading(false);
     }
@@ -62,9 +53,7 @@ export function AIGenerateForm({ deckId, onGenerate }: AIGenerateFormProps) {
           <span className="text-lg">✨</span>
           AI Generate Flashcards
         </CardTitle>
-        <CardDescription>
-          Paste text and let AI create flashcards automatically
-        </CardDescription>
+        <CardDescription>Paste text and let AI create flashcards automatically</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,9 +68,7 @@ export function AIGenerateForm({ deckId, onGenerate }: AIGenerateFormProps) {
               className="resize-none h-32"
               data-testid="generate-text-input"
             />
-            <p className="text-xs text-muted-foreground">
-              {text.length}/10000 characters
-            </p>
+            <p className="text-xs text-muted-foreground">{text.length}/10000 characters</p>
           </div>
 
           <div className="flex items-end gap-4">
@@ -109,18 +96,14 @@ export function AIGenerateForm({ deckId, onGenerate }: AIGenerateFormProps) {
           </div>
 
           {error && (
-            <p
-              className="text-sm text-destructive"
-              data-testid="generate-error"
-            >
+            <p className="text-sm text-destructive" data-testid="generate-error">
               {error}
             </p>
           )}
 
           {loading && (
             <p className="text-sm text-muted-foreground">
-              AI is analyzing your text and creating flashcards. This may take a
-              moment...
+              AI is analyzing your text and creating flashcards. This may take a moment...
             </p>
           )}
         </form>

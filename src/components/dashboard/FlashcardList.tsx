@@ -3,6 +3,8 @@ import type { Flashcard } from "@/db/database.types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -14,14 +16,49 @@ import {
 
 interface FlashcardListProps {
   flashcards: Flashcard[];
+  onEditFlashcard: (id: string, front: string, back: string) => Promise<void>;
   onDeleteFlashcard: (id: string) => Promise<void>;
   loading: boolean;
 }
 
-export function FlashcardList({ flashcards, onDeleteFlashcard, loading }: FlashcardListProps) {
+export function FlashcardList({ flashcards, onEditFlashcard, onDeleteFlashcard, loading }: FlashcardListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<Flashcard | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [cardToEdit, setCardToEdit] = useState<Flashcard | null>(null);
+  const [editFront, setEditFront] = useState("");
+  const [editBack, setEditBack] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const handleEditClick = (card: Flashcard) => {
+    setCardToEdit(card);
+    setEditFront(card.front);
+    setEditBack(card.back);
+    setEditError(null);
+    setEditDialogOpen(true);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (!cardToEdit) return;
+    if (!editFront.trim() || !editBack.trim()) {
+      setEditError("Both front and back text are required");
+      return;
+    }
+    setEditing(true);
+    setEditError(null);
+    try {
+      await onEditFlashcard(cardToEdit.id, editFront.trim(), editBack.trim());
+      setEditDialogOpen(false);
+      setCardToEdit(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Failed to update flashcard");
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const handleDeleteClick = (card: Flashcard) => {
     setCardToDelete(card);
@@ -75,15 +112,25 @@ export function FlashcardList({ flashcards, onDeleteFlashcard, loading }: Flashc
                   <p className="text-sm line-clamp-2">{card.back}</p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
-                onClick={() => handleDeleteClick(card)}
-                data-testid={`delete-flashcard-button-${card.id}`}
-              >
-                Delete
-              </Button>
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEditClick(card)}
+                  data-testid={`edit-flashcard-button-${card.id}`}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => handleDeleteClick(card)}
+                  data-testid={`delete-flashcard-button-${card.id}`}
+                >
+                  Delete
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -119,6 +166,57 @@ export function FlashcardList({ flashcards, onDeleteFlashcard, loading }: Flashc
               data-testid="confirm-delete-flashcard"
             >
               {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Flashcard</DialogTitle>
+            <DialogDescription>Make changes to your flashcard below.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-front">Front</Label>
+              <Textarea
+                id="edit-front"
+                value={editFront}
+                onChange={(e) => setEditFront(e.target.value)}
+                placeholder="Question or term..."
+                rows={3}
+                data-testid="edit-flashcard-front"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-back">Back</Label>
+              <Textarea
+                id="edit-back"
+                value={editBack}
+                onChange={(e) => setEditBack(e.target.value)}
+                placeholder="Answer or definition..."
+                rows={3}
+                data-testid="edit-flashcard-back"
+              />
+            </div>
+            {editError && (
+              <p className="text-sm text-destructive" data-testid="edit-flashcard-error">
+                {editError}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={editing}
+              data-testid="cancel-edit-flashcard"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmEdit} disabled={editing} data-testid="confirm-edit-flashcard">
+              {editing ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

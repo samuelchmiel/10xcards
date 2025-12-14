@@ -1,10 +1,16 @@
 import { test, expect } from "@playwright/test";
 
 // Test credentials from environment variables
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL || "test@example.com";
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || "testpassword123";
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "";
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "";
+
+// Check if real credentials are configured
+const hasCredentials = TEST_EMAIL.length > 0 && TEST_PASSWORD.length > 0;
 
 test.describe("User Flow", () => {
+  // Skip test if credentials aren't configured
+  test.skip(!hasCredentials, "E2E_TEST_EMAIL and E2E_TEST_PASSWORD must be set");
+
   test("complete user journey: login, create deck, add flashcard, delete deck", async ({ page }) => {
     // 1. Visit landing page
     await page.goto("/");

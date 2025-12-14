@@ -318,13 +318,24 @@ test.describe("User Flow", () => {
 
       // Click study button (might be "Study All" now with spaced repetition)
       const studyButton = page.getByTestId("study-deck-button");
-      await expect(studyButton).toBeEnabled();
+      await expect(studyButton).toBeEnabled({ timeout: 5000 });
+      log("Clicking study button");
       await studyButton.click();
 
       // Verify study mode loaded - wait for URL change first
-      await expect(page).toHaveURL(/\/study\//);
+      await expect(page).toHaveURL(/\/study\//, { timeout: 10000 });
+      log("Navigated to study page");
       await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 10000 });
-      await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/2/, { timeout: 10000 });
+
+      // Check if we got the no-cards state or the cards state
+      const noCardsMsg = page.getByTestId("no-cards-message");
+      const cardCounter = page.getByTestId("card-counter");
+      const hasNoCardsMsg = await noCardsMsg.isVisible().catch(() => false);
+      if (hasNoCardsMsg) {
+        log("ERROR: Study mode shows no cards - flashcards may not have been created");
+        throw new Error("Study mode shows 'No flashcards' - test data not persisted correctly");
+      }
+      await expect(cardCounter).toHaveText(/Card 1\/2/, { timeout: 10000 });
 
       // Verify front of card is visible
       await expect(page.getByTestId("flashcard-front")).toBeVisible();
@@ -403,9 +414,19 @@ test.describe("User Flow", () => {
       await expect(page.getByTestId("study-deck-button")).toContainText(/Study.*3/);
 
       // Enter study mode
+      log("Clicking study button");
       await page.getByTestId("study-deck-button").click();
-      await expect(page).toHaveURL(/\/study\//);
+      await expect(page).toHaveURL(/\/study\//, { timeout: 10000 });
+      log("Navigated to study page");
       await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 10000 });
+
+      // Check if we got the no-cards state
+      const noCardsMsg = page.getByTestId("no-cards-message");
+      const hasNoCardsMsg = await noCardsMsg.isVisible().catch(() => false);
+      if (hasNoCardsMsg) {
+        log("ERROR: Study mode shows no cards - flashcards may not have been created");
+        throw new Error("Study mode shows 'No flashcards' - test data not persisted correctly");
+      }
       await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/3/, { timeout: 10000 });
 
       // Study through cards - flip and advance

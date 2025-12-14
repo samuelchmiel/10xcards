@@ -128,6 +128,24 @@ export function Dashboard({ accessToken }: DashboardProps) {
     }
   };
 
+  const handleEditDeck = async (id: string, name: string, description: string) => {
+    const response = await fetchWithAuth(`/api/decks/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ name, description: description || undefined }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to update deck");
+    }
+
+    const { data } = await response.json();
+    setDecks((prev) => prev.map((d) => (d.id === id ? data : d)));
+    if (selectedDeck?.id === id) {
+      setSelectedDeck(data);
+    }
+  };
+
   const handleCreateFlashcard = async (front: string, back: string) => {
     if (!selectedDeck) return;
 
@@ -205,6 +223,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
             decks={decks}
             selectedDeckId={selectedDeck?.id ?? null}
             onSelectDeck={handleSelectDeck}
+            onEditDeck={handleEditDeck}
             onDeleteDeck={handleDeleteDeck}
             loading={decksLoading}
           />

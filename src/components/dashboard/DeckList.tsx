@@ -1,8 +1,11 @@
 import { useState } from "react";
 import type { Deck } from "@/db/database.types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -16,14 +19,50 @@ interface DeckListProps {
   decks: Deck[];
   selectedDeckId: string | null;
   onSelectDeck: (deck: Deck) => void;
+  onEditDeck: (id: string, name: string, description: string) => Promise<void>;
   onDeleteDeck: (id: string) => Promise<void>;
   loading: boolean;
 }
 
-export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, loading }: DeckListProps) {
+export function DeckList({ decks, selectedDeckId, onSelectDeck, onEditDeck, onDeleteDeck, loading }: DeckListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deckToEdit, setDeckToEdit] = useState<Deck | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const handleEditClick = (e: React.MouseEvent, deck: Deck) => {
+    e.stopPropagation();
+    setDeckToEdit(deck);
+    setEditName(deck.name);
+    setEditDescription(deck.description || "");
+    setEditError(null);
+    setEditDialogOpen(true);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (!deckToEdit) return;
+    if (!editName.trim()) {
+      setEditError("Deck name is required");
+      return;
+    }
+    setEditing(true);
+    setEditError(null);
+    try {
+      await onEditDeck(deckToEdit.id, editName.trim(), editDescription.trim());
+      setEditDialogOpen(false);
+      setDeckToEdit(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Failed to update deck");
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const handleDeleteClick = (e: React.MouseEvent, deck: Deck) => {
     e.stopPropagation();
@@ -94,19 +133,30 @@ export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, lo
                   </p>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`opacity-0 group-hover:opacity-100 transition-opacity ${
-                  selectedDeckId === deck.id
-                    ? "hover:bg-primary-foreground/20 text-primary-foreground"
-                    : "hover:bg-destructive hover:text-destructive-foreground"
-                }`}
-                onClick={(e) => handleDeleteClick(e, deck)}
-                data-testid={`delete-deck-button-${deck.id}`}
-              >
-                Delete
-              </Button>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={selectedDeckId === deck.id ? "hover:bg-primary-foreground/20 text-primary-foreground" : ""}
+                  onClick={(e) => handleEditClick(e, deck)}
+                  data-testid={`edit-deck-button-${deck.id}`}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={
+                    selectedDeckId === deck.id
+                      ? "hover:bg-primary-foreground/20 text-primary-foreground"
+                      : "hover:bg-destructive hover:text-destructive-foreground"
+                  }
+                  onClick={(e) => handleDeleteClick(e, deck)}
+                  data-testid={`delete-deck-button-${deck.id}`}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -137,6 +187,56 @@ export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, lo
               data-testid="confirm-delete-deck"
             >
               {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Deck</DialogTitle>
+            <DialogDescription>Make changes to your deck below.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-deck-name">Name</Label>
+              <Input
+                id="edit-deck-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Deck name..."
+                data-testid="edit-deck-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-deck-description">Description (optional)</Label>
+              <Textarea
+                id="edit-deck-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Deck description..."
+                rows={3}
+                data-testid="edit-deck-description"
+              />
+            </div>
+            {editError && (
+              <p className="text-sm text-destructive" data-testid="edit-deck-error">
+                {editError}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={editing}
+              data-testid="cancel-edit-deck"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmEdit} disabled={editing} data-testid="confirm-edit-deck">
+              {editing ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

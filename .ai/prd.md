@@ -77,6 +77,27 @@ As a result, users either create fewer flashcards than they need or give up on t
 | US-044 | As a user, I want to see my progress through the deck (card counter and progress bar). | Should Have | ✅ Implemented |
 | US-045 | As a user, I want keyboard shortcuts (Space/Enter to flip, arrows to navigate, Esc to exit). | Could Have | ✅ Implemented |
 
+### Spaced Repetition
+
+| ID | User Story | Priority | Status |
+|----|------------|----------|--------|
+| US-080 | As a user, I want to rate how well I knew a card (Again, Hard, Good, Easy), so the app can schedule reviews optimally. | Must Have | ✅ Implemented |
+| US-081 | As a user, I want cards to be scheduled using the SM-2 algorithm, so I review cards at optimal intervals. | Must Have | ✅ Implemented |
+| US-082 | As a user, I want to see which cards are due for review, so I can focus on what needs practice. | Should Have | ✅ Implemented |
+| US-083 | As a user, I want a "Review Due" button to study only cards that are due, so I can study efficiently. | Should Have | ✅ Implemented |
+| US-084 | As a user, I want keyboard shortcuts (1-4) to rate cards quickly while studying. | Could Have | ✅ Implemented |
+
+### Statistics & Analytics
+
+| ID | User Story | Priority | Status |
+|----|------------|----------|--------|
+| US-090 | As a user, I want to see my study streak (consecutive days studied), so I stay motivated. | Should Have | ✅ Implemented |
+| US-091 | As a user, I want to see my total reviews and accuracy percentage, so I can track my progress. | Should Have | ✅ Implemented |
+| US-092 | As a user, I want to see a chart of my reviews over the last 30 days, so I can visualize my study habits. | Should Have | ✅ Implemented |
+| US-093 | As a user, I want to see deck progress (mastered vs learning cards), so I know how well I know each deck. | Should Have | ✅ Implemented |
+| US-094 | As a user, I want a mini-stats widget in the dashboard, so I can see key stats at a glance. | Could Have | ✅ Implemented |
+| US-095 | As a user, I want to see total time studied, so I can track my study commitment. | Could Have | ✅ Implemented |
+
 ### Landing Page & Marketing
 
 | ID | User Story | Priority | Status |
@@ -172,12 +193,16 @@ CREATE TABLE decks (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Flashcards
+-- Flashcards (with SM-2 spaced repetition fields)
 CREATE TABLE flashcards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     deck_id UUID REFERENCES decks(id) ON DELETE CASCADE,
     front TEXT NOT NULL,
     back TEXT NOT NULL,
+    easiness_factor DECIMAL(4,2) DEFAULT 2.5,
+    interval_days INTEGER DEFAULT 0,
+    repetitions INTEGER DEFAULT 0,
+    next_review_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -189,6 +214,30 @@ CREATE TABLE user_quotas (
     ai_generation_limit INTEGER NOT NULL DEFAULT 20,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Study Sessions (analytics)
+CREATE TABLE study_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    deck_id UUID REFERENCES decks(id) ON DELETE CASCADE,
+    started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    ended_at TIMESTAMP WITH TIME ZONE,
+    cards_studied INTEGER DEFAULT 0,
+    cards_correct INTEGER DEFAULT 0,
+    cards_incorrect INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Card Reviews (analytics)
+CREATE TABLE card_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    flashcard_id UUID REFERENCES flashcards(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    session_id UUID REFERENCES study_sessions(id) ON DELETE SET NULL,
+    rating INTEGER CHECK (rating >= 0 AND rating <= 5),
+    time_to_answer INTEGER,
+    reviewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Row Level Security enabled on all tables
@@ -204,7 +253,8 @@ CREATE TABLE user_quotas (
 | `/register` | User registration form | No |
 | `/dashboard` | Main app - deck list, flashcard management, AI generation | Yes |
 | `/profile` | User profile with account info and quota details | Yes |
-| `/study/[deckId]` | Study mode - flip cards with navigation and shuffle | Yes |
+| `/study/[deckId]` | Study mode - flip cards with spaced repetition rating | Yes |
+| `/stats` | Statistics page with study analytics and visualizations | Yes |
 
 ### 4.4 API Endpoints
 
@@ -213,12 +263,19 @@ CREATE TABLE user_quotas (
 | `/api/decks` | GET | List user's decks | Yes |
 | `/api/decks` | POST | Create new deck | Yes |
 | `/api/decks/[id]` | GET | Get deck details | Yes |
+| `/api/decks/[id]` | PUT | Update deck | Yes |
 | `/api/decks/[id]` | DELETE | Delete deck | Yes |
 | `/api/flashcards` | GET | List flashcards (by deck_id) | Yes |
 | `/api/flashcards` | POST | Create flashcard | Yes |
+| `/api/flashcards/[id]` | PUT | Update flashcard | Yes |
 | `/api/flashcards/[id]` | DELETE | Delete flashcard | Yes |
+| `/api/flashcards/[id]/review` | POST | Submit review rating (SM-2) | Yes |
+| `/api/flashcards/bulk` | POST | Bulk create flashcards | Yes |
 | `/api/generate-flashcards` | POST | Generate flashcards with AI | Yes |
 | `/api/user/quota` | GET | Get AI generation quota | Yes |
+| `/api/study-sessions` | GET, POST | List/create study sessions | Yes |
+| `/api/study-sessions/[id]` | GET, PUT | Get/update study session | Yes |
+| `/api/stats` | GET | Get user statistics | Yes |
 
 ### 4.5 AI Generation Specification
 
@@ -273,9 +330,10 @@ interface GenerateResponse {
 
 ### Features Excluded from MVP
 
-| Feature | Reason | Potential Version |
-|---------|--------|-------------------|
-| **Spaced Repetition (SM-2)** | Algorithm complexity | v2.0 |
+| Feature | Reason | Status |
+|---------|--------|--------|
+| **Spaced Repetition (SM-2)** | Algorithm complexity | ✅ Implemented v1.0 |
+| **Study Statistics** | Requires progress tracking | ✅ Implemented v1.0 |
 | **Import from Anki/Quizlet** | Requires format reverse-engineering | v1.5 |
 | **Export to PDF/Anki** | Nice-to-have, not core value | v1.5 |
 | **Deck Sharing** | Requires permission system | v2.0 |
@@ -285,8 +343,7 @@ interface GenerateResponse {
 | **Offline Mode / PWA** | Sync complexity | v1.5 |
 | **Image Support** | Storage and AI vision complexity | v2.0 |
 | **Audio/TTS** | Integration complexity | v2.0 |
-| **Study Statistics** | Requires progress tracking | v1.5 |
-| **Gamification (streaks, XP)** | Nice-to-have | v2.0 |
+| **Gamification (streaks, XP)** | Nice-to-have (partial: streak implemented) | v2.0 |
 
 ### Intentional Technical Limitations
 
@@ -311,4 +368,4 @@ interface GenerateResponse {
 ---
 
 *Document prepared: December 2024*
-*Last updated: December 14, 2024 - Study Mode implemented*
+*Last updated: December 14, 2024 - Spaced Repetition (SM-2) and Statistics implemented*

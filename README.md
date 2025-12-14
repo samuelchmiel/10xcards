@@ -9,6 +9,8 @@ AI-powered educational flashcard generator. Create flashcard decks, add cards ma
 - **AI Generation** - Paste text and generate flashcards automatically with Claude AI
 - **Preview & Select** - Review AI-generated cards before saving, edit as needed
 - **Study Mode** - Flip-card study with shuffle, progress tracking, and keyboard shortcuts
+- **Spaced Repetition** - SM-2 algorithm for optimal review scheduling (Again/Hard/Good/Easy ratings)
+- **Statistics** - Track study streak, accuracy, reviews per day, deck progress, and time studied
 - **Usage Limits** - 75 AI-generated flashcards lifetime limit per user
 
 ## Tech Stack
@@ -80,10 +82,12 @@ src/
 │   ├── auth/         # Login/Register forms
 │   ├── dashboard/    # Dashboard UI components
 │   ├── study/        # Study mode components
+│   ├── stats/        # Statistics page components
 │   └── ui/           # shadcn/ui components
 ├── pages/            # Astro pages & API routes
 │   └── api/          # REST API endpoints
 ├── lib/              # Services & utilities
+│   └── services/     # Business logic (spaced-repetition, openrouter)
 ├── db/               # Supabase client & types
 └── layouts/          # Astro layouts
 
@@ -102,9 +106,13 @@ src/
 | `/api/decks/[id]` | GET, PUT, DELETE | Get/update/delete deck |
 | `/api/flashcards` | GET, POST | List/create flashcards |
 | `/api/flashcards/[id]` | PUT, DELETE | Update/delete flashcard |
+| `/api/flashcards/[id]/review` | POST | Submit review rating (SM-2) |
 | `/api/flashcards/bulk` | POST | Bulk create flashcards |
 | `/api/generate-flashcards` | POST | Generate flashcards with AI |
 | `/api/user/quota` | GET | Get AI usage quota |
+| `/api/study-sessions` | GET, POST | List/create study sessions |
+| `/api/study-sessions/[id]` | GET, PUT | Get/update study session |
+| `/api/stats` | GET | Get user statistics |
 
 ## Environment Variables
 

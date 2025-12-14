@@ -1,4 +1,4 @@
-interface GeneratedFlashcard {
+export interface GeneratedFlashcard {
   front: string;
   back: string;
 }
@@ -72,7 +72,7 @@ Example response format:
   return parseFlashcardsResponse(content);
 }
 
-function parseFlashcardsResponse(content: string): GeneratedFlashcard[] {
+export function parseFlashcardsResponse(content: string): GeneratedFlashcard[] {
   let jsonString = content.trim();
 
   // Remove markdown code blocks if present

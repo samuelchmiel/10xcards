@@ -5,7 +5,16 @@ import { DeckForm } from "./DeckForm";
 import { FlashcardList } from "./FlashcardList";
 import { FlashcardForm } from "./FlashcardForm";
 import { AIGenerateForm } from "./AIGenerateForm";
+import { AIPreviewDialog } from "./AIPreviewDialog";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
+
+interface PreviewFlashcard {
+  id: string;
+  front: string;
+  back: string;
+}
 
 interface DashboardProps {
   accessToken: string;
@@ -18,6 +27,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
   const [decksLoading, setDecksLoading] = useState(true);
   const [flashcardsLoading, setFlashcardsLoading] = useState(false);
   const [quota, setQuota] = useState<UserQuotaInfo | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewCards, setPreviewCards] = useState<PreviewFlashcard[]>([]);
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
@@ -128,6 +139,24 @@ export function Dashboard({ accessToken }: DashboardProps) {
     }
   };
 
+  const handleEditDeck = async (id: string, name: string, description: string) => {
+    const response = await fetchWithAuth(`/api/decks/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ name, description: description || undefined }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to update deck");
+    }
+
+    const { data } = await response.json();
+    setDecks((prev) => prev.map((d) => (d.id === id ? data : d)));
+    if (selectedDeck?.id === id) {
+      setSelectedDeck(data);
+    }
+  };
+
   const handleCreateFlashcard = async (front: string, back: string) => {
     if (!selectedDeck) return;
 
@@ -178,7 +207,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
     const response = await fetchWithAuth("/api/generate-flashcards", {
       method: "POST",
-      body: JSON.stringify({ text, deck_id: selectedDeck.id, count }),
+      body: JSON.stringify({ text, deck_id: selectedDeck.id, count, preview: true }),
     });
 
     if (!response.ok) {
@@ -187,9 +216,32 @@ export function Dashboard({ accessToken }: DashboardProps) {
     }
 
     const { data } = await response.json();
-    setFlashcards((prev) => [...data, ...prev]);
+    setPreviewCards(data);
+    setPreviewDialogOpen(true);
+  };
 
-    // Refresh quota after successful generation
+  const handleSavePreviewCards = async (cards: { front: string; back: string }[]) => {
+    if (!selectedDeck) return;
+
+    const response = await fetchWithAuth("/api/flashcards/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        deck_id: selectedDeck.id,
+        flashcards: cards,
+        ai_generated: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to save flashcards");
+    }
+
+    const { data } = await response.json();
+    setFlashcards((prev) => [...data, ...prev]);
+    setPreviewCards([]);
+
+    // Refresh quota after successful save
     loadQuota();
   };
 
@@ -205,6 +257,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
             decks={decks}
             selectedDeckId={selectedDeck?.id ?? null}
             onSelectDeck={handleSelectDeck}
+            onEditDeck={handleEditDeck}
             onDeleteDeck={handleDeleteDeck}
             loading={decksLoading}
           />
@@ -243,9 +296,19 @@ export function Dashboard({ accessToken }: DashboardProps) {
       <main className="flex-1 overflow-auto p-6">
         {selectedDeck ? (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
-              {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
+                {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
+              </div>
+              <Button
+                onClick={() => (window.location.href = `/study/${selectedDeck.id}`)}
+                disabled={flashcards.length === 0}
+                data-testid="study-deck-button"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Study ({flashcards.length})
+              </Button>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -274,6 +337,13 @@ export function Dashboard({ accessToken }: DashboardProps) {
           </div>
         )}
       </main>
+
+      <AIPreviewDialog
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+        flashcards={previewCards}
+        onSave={handleSavePreviewCards}
+      />
     </div>
   );
 }

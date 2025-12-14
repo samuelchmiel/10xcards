@@ -1,0 +1,37 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { StudyMode } from "@/components/study/StudyMode";
+
+export const prerender = false;
+
+const { deckId } = Astro.params;
+const user = Astro.locals.user;
+const supabase = Astro.locals.supabase;
+const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
+
+if (!user) {
+  return Astro.redirect("/login");
+}
+
+if (!deckId) {
+  return Astro.redirect("/dashboard");
+}
+
+// Fetch deck to verify ownership and get name
+const { data: deck } = await supabase.from("decks").select("id, name, description").eq("id", deckId).single();
+
+if (!deck) {
+  return Astro.redirect("/dashboard");
+}
+
+// Fetch flashcards for the deck
+const { data: flashcards } = await supabase
+  .from("flashcards")
+  .select("id, front, back")
+  .eq("deck_id", deckId)
+  .order("created_at", { ascending: true });
+---
+
+<Layout title={`Study - ${deck.name} - 10xCards`}>
+  <StudyMode client:load deckName={deck.name} flashcards={flashcards || []} accessToken={accessToken} />
+</Layout>

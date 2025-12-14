@@ -4,6 +4,7 @@ import { DeckList } from "./DeckList";
 import { DeckForm } from "./DeckForm";
 import { FlashcardList } from "./FlashcardList";
 import { FlashcardForm } from "./FlashcardForm";
+import { AIGenerateForm } from "./AIGenerateForm";
 import { Separator } from "@/components/ui/separator";
 
 interface DashboardProps {
@@ -145,6 +146,23 @@ export function Dashboard({ accessToken }: DashboardProps) {
     setFlashcards((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const handleGenerateFlashcards = async (text: string, count: number) => {
+    if (!selectedDeck) return;
+
+    const response = await fetchWithAuth("/api/generate-flashcards", {
+      method: "POST",
+      body: JSON.stringify({ text, deck_id: selectedDeck.id, count }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to generate flashcards");
+    }
+
+    const { data } = await response.json();
+    setFlashcards((prev) => [...data, ...prev]);
+  };
+
   return (
     <div
       className="flex flex-col md:flex-row h-[calc(100vh-73px)]"
@@ -180,10 +198,16 @@ export function Dashboard({ accessToken }: DashboardProps) {
               )}
             </div>
 
-            <FlashcardForm
-              deckId={selectedDeck.id}
-              onSubmit={handleCreateFlashcard}
-            />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <FlashcardForm
+                deckId={selectedDeck.id}
+                onSubmit={handleCreateFlashcard}
+              />
+              <AIGenerateForm
+                deckId={selectedDeck.id}
+                onGenerate={handleGenerateFlashcards}
+              />
+            </div>
 
             <Separator />
 

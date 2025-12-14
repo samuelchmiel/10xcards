@@ -23,8 +23,16 @@ export const UpdateFlashcardSchema = z.object({
   back: z.string().min(1, "Back text is required").optional(),
 });
 
+// AI generation schema
+export const GenerateFlashcardsSchema = z.object({
+  text: z.string().min(10, "Text must be at least 10 characters").max(10000, "Text must be 10000 characters or less"),
+  deck_id: z.string().uuid("Invalid deck ID"),
+  count: z.number().int().min(1, "Must generate at least 1 flashcard").max(20, "Cannot generate more than 20 flashcards"),
+});
+
 // Type exports
 export type CreateDeckInput = z.infer<typeof CreateDeckSchema>;
 export type UpdateDeckInput = z.infer<typeof UpdateDeckSchema>;
 export type CreateFlashcardInput = z.infer<typeof CreateFlashcardSchema>;
 export type UpdateFlashcardInput = z.infer<typeof UpdateFlashcardSchema>;
+export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsSchema>;

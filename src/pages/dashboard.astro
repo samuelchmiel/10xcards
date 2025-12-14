@@ -16,6 +16,13 @@ const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
           <nav class="flex items-center gap-4">
             <a href="/dashboard" class="text-sm font-medium text-foreground" data-testid="nav-dashboard"> Dashboard </a>
             <a
+              href="/stats"
+              class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="nav-stats"
+            >
+              Stats
+            </a>
+            <a
               href="/profile"
               class="text-sm text-muted-foreground hover:text-foreground transition-colors"
               data-testid="nav-profile"

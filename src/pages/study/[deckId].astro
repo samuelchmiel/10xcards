@@ -45,6 +45,7 @@ const studyTitle = dueOnly ? `Review Due - ${deck.name}` : `Study - ${deck.name}
 <Layout title={`${studyTitle} - 10xCards`}>
   <StudyMode
     client:load
+    deckId={deck.id}
     deckName={deck.name}
     flashcards={flashcards || []}
     accessToken={accessToken}

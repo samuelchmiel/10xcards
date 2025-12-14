@@ -52,6 +52,8 @@ export const BulkCreateFlashcardsSchema = z.object({
 // Review flashcard schema (SM-2 spaced repetition)
 export const ReviewFlashcardSchema = z.object({
   rating: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+  session_id: z.string().uuid().optional(),
+  time_to_answer: z.number().int().min(0).optional(),
 });
 
 // Type exports

@@ -6,9 +6,10 @@ export const prerender = false;
 
 const QuerySchema = z.object({
   deck_id: z.string().uuid("Invalid deck ID"),
+  due: z.enum(["true", "false"]).optional(),
 });
 
-// GET /api/flashcards?deck_id=xxx - List flashcards for a deck
+// GET /api/flashcards?deck_id=xxx&due=true - List flashcards for a deck (optionally filter by due)
 export const GET: APIRoute = async ({ url, locals }) => {
   const { supabase, user } = locals;
 
@@ -20,7 +21,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const deckId = url.searchParams.get("deck_id");
-  const validation = QuerySchema.safeParse({ deck_id: deckId });
+  const due = url.searchParams.get("due");
+  const validation = QuerySchema.safeParse({ deck_id: deckId, due: due || undefined });
 
   if (!validation.success) {
     return new Response(JSON.stringify({ error: validation.error.errors }), {
@@ -39,11 +41,17 @@ export const GET: APIRoute = async ({ url, locals }) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from("flashcards")
-    .select("*")
-    .eq("deck_id", validation.data.deck_id)
-    .order("created_at", { ascending: true });
+  // Build query
+  let query = supabase.from("flashcards").select("*").eq("deck_id", validation.data.deck_id);
+
+  // Filter for due cards if requested
+  if (validation.data.due === "true") {
+    const today = new Date().toISOString().split("T")[0];
+    // Cards are due if: next_review_date is null (new card) OR next_review_date <= today
+    query = query.or(`next_review_date.is.null,next_review_date.lte.${today}`);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: true });
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {

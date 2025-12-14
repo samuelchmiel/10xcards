@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Deck, Flashcard, UserQuotaInfo } from "@/db/database.types";
 import { DeckList } from "./DeckList";
 import { DeckForm } from "./DeckForm";
@@ -8,7 +8,8 @@ import { AIGenerateForm } from "./AIGenerateForm";
 import { AIPreviewDialog } from "./AIPreviewDialog";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
+import { isDue } from "@/lib/services/spaced-repetition";
 
 interface PreviewFlashcard {
   id: string;
@@ -101,6 +102,11 @@ export function Dashboard({ accessToken }: DashboardProps) {
       setFlashcards([]);
     }
   }, [selectedDeck, loadFlashcards]);
+
+  // Compute due cards count
+  const dueCardsCount = useMemo(() => {
+    return flashcards.filter((card) => isDue(card)).length;
+  }, [flashcards]);
 
   const handleSelectDeck = (deck: Deck) => {
     setSelectedDeck(deck);
@@ -301,14 +307,27 @@ export function Dashboard({ accessToken }: DashboardProps) {
                 <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
                 {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
               </div>
-              <Button
-                onClick={() => (window.location.href = `/study/${selectedDeck.id}`)}
-                disabled={flashcards.length === 0}
-                data-testid="study-deck-button"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Study ({flashcards.length})
-              </Button>
+              <div className="flex gap-2">
+                {dueCardsCount > 0 && (
+                  <Button
+                    variant="default"
+                    onClick={() => (window.location.href = `/study/${selectedDeck.id}?due=true`)}
+                    data-testid="review-due-button"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Review Due ({dueCardsCount})
+                  </Button>
+                )}
+                <Button
+                  variant={dueCardsCount > 0 ? "outline" : "default"}
+                  onClick={() => (window.location.href = `/study/${selectedDeck.id}`)}
+                  disabled={flashcards.length === 0}
+                  data-testid="study-deck-button"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Study All ({flashcards.length})
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">

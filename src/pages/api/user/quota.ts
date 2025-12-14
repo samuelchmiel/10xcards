@@ -31,7 +31,7 @@ export const GET: APIRoute = async ({ locals }) => {
         remaining: data[0].remaining,
         limit: data[0].limit_value,
       }
-    : { count: 0, remaining: 100, limit: 100 };
+    : { count: 0, remaining: 20, limit: 20 };
 
   return new Response(JSON.stringify({ data: quotaInfo }), {
     status: 200,

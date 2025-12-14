@@ -5,7 +5,7 @@
 CREATE TABLE user_quotas (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     ai_generation_count INTEGER NOT NULL DEFAULT 0,
-    ai_generation_limit INTEGER NOT NULL DEFAULT 100,
+    ai_generation_limit INTEGER NOT NULL DEFAULT 20,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -53,7 +53,7 @@ DECLARE
 BEGIN
     -- Upsert user quota record
     INSERT INTO user_quotas (user_id, ai_generation_count, ai_generation_limit)
-    VALUES (p_user_id, 0, 100)
+    VALUES (p_user_id, 0, 20)
     ON CONFLICT (user_id) DO NOTHING;
 
     -- Get current values with lock
@@ -93,7 +93,7 @@ RETURNS TABLE (
 BEGIN
     -- Upsert user quota record
     INSERT INTO user_quotas (user_id, ai_generation_count, ai_generation_limit)
-    VALUES (p_user_id, 0, 100)
+    VALUES (p_user_id, 0, 20)
     ON CONFLICT (user_id) DO NOTHING;
 
     -- Return quota info

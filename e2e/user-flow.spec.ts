@@ -13,6 +13,7 @@ const DEBUG = process.env.DEBUG === "true" || process.env.CI === "true";
 
 function log(message: string) {
   if (DEBUG) {
+    // eslint-disable-next-line no-console
     console.log(`[E2E] ${message}`);
   }
 }
@@ -32,7 +33,10 @@ async function login(page: Page) {
 
   // Wait for either success (redirect to dashboard) or error message
   const dashboardUrl = page.waitForURL("**/dashboard", { timeout: 15000 });
-  const errorMessage = page.getByTestId("auth-message").waitFor({ state: "visible", timeout: 5000 }).catch(() => null);
+  const errorMessage = page
+    .getByTestId("auth-message")
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => null);
 
   const result = await Promise.race([
     dashboardUrl.then(() => "success" as const),
@@ -372,7 +376,7 @@ test.describe("User Flow", () => {
 
       // Try next button or rating
       const nextButton = page.getByTestId("next-button");
-      if (await nextButton.isVisible() && await nextButton.isEnabled()) {
+      if ((await nextButton.isVisible()) && (await nextButton.isEnabled())) {
         await nextButton.click();
       } else {
         const goodButton = page.getByTestId("rating-good");

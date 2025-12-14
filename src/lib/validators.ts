@@ -32,6 +32,21 @@ export const GenerateFlashcardsSchema = z.object({
     .int()
     .min(1, "Must generate at least 1 flashcard")
     .max(20, "Cannot generate more than 20 flashcards"),
+  preview: z.boolean().optional().default(false),
+});
+
+// Bulk create flashcards schema (for saving AI-generated cards after preview)
+export const BulkCreateFlashcardsSchema = z.object({
+  deck_id: z.string().uuid("Invalid deck ID"),
+  flashcards: z
+    .array(
+      z.object({
+        front: z.string().min(1, "Front text is required"),
+        back: z.string().min(1, "Back text is required"),
+      })
+    )
+    .min(1, "At least one flashcard is required"),
+  ai_generated: z.boolean().optional().default(false),
 });
 
 // Type exports
@@ -40,3 +55,4 @@ export type UpdateDeckInput = z.infer<typeof UpdateDeckSchema>;
 export type CreateFlashcardInput = z.infer<typeof CreateFlashcardSchema>;
 export type UpdateFlashcardInput = z.infer<typeof UpdateFlashcardSchema>;
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsSchema>;
+export type BulkCreateFlashcardsInput = z.infer<typeof BulkCreateFlashcardsSchema>;

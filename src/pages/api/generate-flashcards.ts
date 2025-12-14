@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  const { text, deck_id, count } = validation.data;
+  const { text, deck_id, count, preview } = validation.data;
 
   // Check user's AI generation quota
   const { data: quotaData, error: quotaError } = await supabase.rpc("get_user_quota", {
@@ -86,6 +86,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
         headers: { "Content-Type": "application/json" },
       }
     );
+  }
+
+  // If preview mode, return generated cards without saving
+  if (preview) {
+    const previewCards = generatedFlashcards.map((fc, index) => ({
+      id: `preview-${index}`,
+      deck_id,
+      front: fc.front,
+      back: fc.back,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    return new Response(JSON.stringify({ data: previewCards, preview: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Insert generated flashcards into database

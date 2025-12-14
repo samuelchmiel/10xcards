@@ -66,14 +66,16 @@ As a result, users either create fewer flashcards than they need or give up on t
 | US-032 | As a user, I want to edit AI-generated flashcards before saving, so that I can adjust them to my needs. | Should Have | ✅ Implemented |
 | US-033 | As a user, I want to see how many AI generations I have left, so that I can plan my usage. | Must Have | ✅ Implemented (lifetime limit) |
 
-### Study Mode (Future)
+### Study Mode
 
 | ID | User Story | Priority | Status |
 |----|------------|----------|--------|
-| US-040 | As a user, I want to study a deck in flip-card mode, so that I can test my knowledge. | Must Have | ❌ Not implemented |
-| US-041 | As a user, I want to flip a card to reveal the answer, so that I can check if I knew it. | Must Have | ❌ Not implemented |
-| US-042 | As a user, I want to navigate to the next/previous card, so that I can go through the entire deck. | Must Have | ❌ Not implemented |
-| US-043 | As a user, I want to shuffle the deck order, so that I don't memorize cards by position. | Should Have | ❌ Not implemented |
+| US-040 | As a user, I want to study a deck in flip-card mode, so that I can test my knowledge. | Must Have | ✅ Implemented |
+| US-041 | As a user, I want to flip a card to reveal the answer, so that I can check if I knew it. | Must Have | ✅ Implemented |
+| US-042 | As a user, I want to navigate to the next/previous card, so that I can go through the entire deck. | Must Have | ✅ Implemented |
+| US-043 | As a user, I want to shuffle the deck order, so that I don't memorize cards by position. | Should Have | ✅ Implemented |
+| US-044 | As a user, I want to see my progress through the deck (card counter and progress bar). | Should Have | ✅ Implemented |
+| US-045 | As a user, I want keyboard shortcuts (Space/Enter to flip, arrows to navigate, Esc to exit). | Could Have | ✅ Implemented |
 
 ### Landing Page & Marketing
 
@@ -202,6 +204,7 @@ CREATE TABLE user_quotas (
 | `/register` | User registration form | No |
 | `/dashboard` | Main app - deck list, flashcard management, AI generation | Yes |
 | `/profile` | User profile with account info and quota details | Yes |
+| `/study/[deckId]` | Study mode - flip cards with navigation and shuffle | Yes |
 
 ### 4.4 API Endpoints
 
@@ -308,4 +311,4 @@ interface GenerateResponse {
 ---
 
 *Document prepared: December 2024*
-*Last updated: December 2024*
+*Last updated: December 14, 2024 - Study Mode implemented*

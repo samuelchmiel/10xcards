@@ -13,6 +13,10 @@ if (!user) {
   return Astro.redirect("/login");
 }
 
+if (!deckId) {
+  return Astro.redirect("/dashboard");
+}
+
 // Fetch deck to verify ownership and get name
 const { data: deck } = await supabase.from("decks").select("id, name, description").eq("id", deckId).single();
 

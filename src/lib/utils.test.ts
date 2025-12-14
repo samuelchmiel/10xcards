@@ -86,8 +86,8 @@ describe("cn (className utility)", () => {
   });
 
   it("handles complex component class patterns", () => {
-    const variant = "primary";
-    const size = "lg";
+    const variant: string = "primary";
+    const size: string = "lg";
     const result = cn(
       "btn",
       variant === "primary" && "btn-primary",

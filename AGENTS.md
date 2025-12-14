@@ -43,7 +43,7 @@ src/
 ├── pages/                # Routes and API endpoints
 │   └── api/              # REST API
 ├── components/           # Astro (static) + React (interactive)
-│   ├── ui/               # shadcn/ui (don't modify)
+│   ├── ui/               # shadcn/ui (add via CLI, don't hand-edit)
 │   └── hooks/            # React hooks
 ├── lib/                  # Helpers
 │   └── services/         # Business logic
@@ -197,7 +197,7 @@ Scopes: `api`, `ui`, `auth`, `db`, `ai`, `test`, `ci`
 **DO NOT:**
 - Use `any` type
 - Use `"use client"` directive
-- Modify files in `src/components/ui/`
+- Hand-edit files in `src/components/ui/` (add new components via `npx shadcn@latest add`)
 - Import Supabase client directly (use `locals.supabase`)
 - Create tables without RLS
 - Auto-merge PRs

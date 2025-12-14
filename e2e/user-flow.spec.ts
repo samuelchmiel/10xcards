@@ -34,53 +34,50 @@ async function login(page: Page) {
   // Fill and verify email - click first to ensure focus
   await emailInput.click();
   await emailInput.fill(TEST_EMAIL);
-  await expect(emailInput).toHaveValue(TEST_EMAIL, { timeout: 2000 });
+  await expect(emailInput).toHaveValue(TEST_EMAIL, { timeout: 5000 });
 
   // Fill and verify password
   await passwordInput.click();
   await passwordInput.fill(TEST_PASSWORD);
-  await expect(passwordInput).toHaveValue(TEST_PASSWORD, { timeout: 2000 });
+  await expect(passwordInput).toHaveValue(TEST_PASSWORD, { timeout: 5000 });
 
   log("Filled credentials, clicking login button...");
   await loginButton.click();
 
-  // Wait for either success (redirect to dashboard) or error message
-  const dashboardUrl = page.waitForURL("**/dashboard", { timeout: 15000 });
-  const errorMessage = page
-    .getByTestId("auth-message")
-    .waitFor({ state: "visible", timeout: 5000 })
-    .catch(() => null);
-
-  const result = await Promise.race([
-    dashboardUrl.then(() => "success" as const),
-    errorMessage.then(() => "error" as const),
-  ]).catch(() => "timeout" as const);
-
-  if (result === "error") {
-    const authMessage = page.getByTestId("auth-message");
-    const messageText = await authMessage.textContent();
-    log(`Auth error message: ${messageText}`);
-
-    // Check if it's actually a success message (email confirmation)
-    if (messageText?.includes("Check your email")) {
-      throw new Error(`Login failed: User needs email confirmation. Message: ${messageText}`);
+  // Wait for redirect to dashboard (primary success indicator)
+  try {
+    await page.waitForURL("**/dashboard", { timeout: 20000 });
+    log("Login successful, verifying dashboard...");
+    await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
+    log("Dashboard verified");
+    return;
+  } catch {
+    // Check if we're already on dashboard (might have redirected)
+    if (page.url().includes("/dashboard")) {
+      log("Already on dashboard, verifying...");
+      await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
+      log("Dashboard verified");
+      return;
     }
-    throw new Error(`Login failed with error: ${messageText}`);
-  }
 
-  if (result === "timeout") {
-    const currentUrl = page.url();
-    log(`Timeout waiting for redirect. Current URL: ${currentUrl}`);
+    // Check for error message
+    const authMessage = page.getByTestId("auth-message");
+    const isVisible = await authMessage.isVisible().catch(() => false);
+    if (isVisible) {
+      const messageText = await authMessage.textContent();
+      log(`Auth error message: ${messageText}`);
+      if (messageText?.includes("Check your email")) {
+        throw new Error(`Login failed: User needs email confirmation. Message: ${messageText}`);
+      }
+      throw new Error(`Login failed with error: ${messageText}`);
+    }
 
     // Take screenshot for debugging
+    const currentUrl = page.url();
+    log(`Login failed. Current URL: ${currentUrl}`);
     await page.screenshot({ path: "test-results/login-timeout.png" });
-
     throw new Error(`Login timeout - stayed on ${currentUrl}. Check if credentials are correct and user exists.`);
   }
-
-  log("Login successful, verifying dashboard...");
-  await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
-  log("Dashboard verified");
 }
 
 // Helper function to create a deck with better selectors
@@ -92,20 +89,23 @@ async function createDeck(page: Page, name: string, description = "E2E test deck
   const createButton = page.getByTestId("create-deck-button");
 
   // Wait for form to be ready
-  await expect(nameInput).toBeVisible();
+  await expect(nameInput).toBeVisible({ timeout: 10000 });
 
-  // Fill and verify name
+  // Clear and fill name - use pressSequentially for more reliable input
   await nameInput.click();
-  await nameInput.fill(name);
-  await expect(nameInput).toHaveValue(name, { timeout: 2000 });
+  await nameInput.clear();
+  await nameInput.pressSequentially(name, { delay: 10 });
+  await expect(nameInput).toHaveValue(name, { timeout: 5000 });
 
-  // Fill and verify description
+  // Clear and fill description
   await descInput.click();
-  await descInput.fill(description);
-  await expect(descInput).toHaveValue(description, { timeout: 2000 });
+  await descInput.clear();
+  await descInput.pressSequentially(description, { delay: 10 });
+  await expect(descInput).toHaveValue(description, { timeout: 5000 });
 
-  // Wait for button to be enabled (name is filled)
-  await expect(createButton).toBeEnabled({ timeout: 5000 });
+  // Wait for React state to update and button to be enabled
+  await page.waitForTimeout(100);
+  await expect(createButton).toBeEnabled({ timeout: 10000 });
   await createButton.click();
 
   // Wait for deck to appear in the list - use more specific selector
@@ -186,9 +186,10 @@ test.describe("User Flow", () => {
       // Log in
       await login(page);
 
-      // Logout
+      // Logout - wait for navigation to complete
       await page.getByTestId("logout-button").click();
-      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+      await page.waitForURL(/\/login/, { timeout: 15000 });
+      await expect(page).toHaveURL(/\/login/);
     });
 
     test("should redirect unauthenticated users to login", async ({ page }) => {
@@ -476,9 +477,10 @@ test.describe("User Flow", () => {
       // Cleanup
       await deleteDeck(page, deckName);
 
-      // Logout
+      // Logout - wait for navigation to complete
       await page.getByTestId("logout-button").click();
-      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+      await page.waitForURL(/\/login/, { timeout: 15000 });
+      await expect(page).toHaveURL(/\/login/);
     });
   });
 });

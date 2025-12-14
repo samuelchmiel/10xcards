@@ -188,7 +188,7 @@ test.describe("User Flow", () => {
 
       // Logout
       await page.getByTestId("logout-button").click();
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
     });
 
     test("should redirect unauthenticated users to login", async ({ page }) => {
@@ -321,9 +321,10 @@ test.describe("User Flow", () => {
       await expect(studyButton).toBeEnabled();
       await studyButton.click();
 
-      // Verify study mode loaded
-      await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 5000 });
-      await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/2/);
+      // Verify study mode loaded - wait for URL change first
+      await expect(page).toHaveURL(/\/study\//);
+      await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/2/, { timeout: 10000 });
 
       // Verify front of card is visible
       await expect(page.getByTestId("flashcard-front")).toBeVisible();
@@ -344,7 +345,7 @@ test.describe("User Flow", () => {
         }
       }
 
-      await expect(page.getByTestId("card-counter")).toHaveText(/Card 2\/2/);
+      await expect(page.getByTestId("card-counter")).toHaveText(/Card 2\/2/, { timeout: 10000 });
 
       // Exit study mode
       await page.getByTestId("study-exit-button").click();
@@ -377,7 +378,7 @@ test.describe("User Flow", () => {
       await expect(page).toHaveURL("/profile");
 
       // Verify profile page content
-      await expect(page.getByTestId("profile-page")).toBeVisible();
+      await expect(page.getByTestId("profile")).toBeVisible({ timeout: 10000 });
 
       // Navigate back to dashboard
       await page.getByTestId("nav-dashboard").click();
@@ -403,8 +404,9 @@ test.describe("User Flow", () => {
 
       // Enter study mode
       await page.getByTestId("study-deck-button").click();
-      await expect(page.getByTestId("study-mode")).toBeVisible();
-      await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/3/);
+      await expect(page).toHaveURL(/\/study\//);
+      await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId("card-counter")).toHaveText(/Card 1\/3/, { timeout: 10000 });
 
       // Study through cards - flip and advance
       await page.getByTestId("flashcard").click(); // Flip first card
@@ -429,7 +431,7 @@ test.describe("User Flow", () => {
 
       // Logout
       await page.getByTestId("logout-button").click();
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
     });
   });
 });

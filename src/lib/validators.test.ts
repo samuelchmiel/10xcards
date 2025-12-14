@@ -5,6 +5,8 @@ import {
   CreateFlashcardSchema,
   UpdateFlashcardSchema,
   GenerateFlashcardsSchema,
+  BulkCreateFlashcardsSchema,
+  ReviewFlashcardSchema,
 } from "./validators";
 
 describe("CreateDeckSchema", () => {
@@ -227,5 +229,193 @@ describe("GenerateFlashcardsSchema", () => {
       count: 20,
     });
     expect(maxResult.success).toBe(true);
+  });
+});
+
+describe("BulkCreateFlashcardsSchema", () => {
+  const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+
+  it("validates correct bulk create request", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [
+        { front: "Question 1", back: "Answer 1" },
+        { front: "Question 2", back: "Answer 2" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates with ai_generated flag", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [{ front: "Q", back: "A" }],
+      ai_generated: true,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.ai_generated).toBe(true);
+    }
+  });
+
+  it("defaults ai_generated to false", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [{ front: "Q", back: "A" }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.ai_generated).toBe(false);
+    }
+  });
+
+  it("rejects empty flashcards array", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.errors[0].message).toBe("At least one flashcard is required");
+    }
+  });
+
+  it("rejects invalid deck_id", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: "invalid",
+      flashcards: [{ front: "Q", back: "A" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects flashcard with empty front", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [{ front: "", back: "A" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects flashcard with empty back", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [{ front: "Q", back: "" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("validates multiple flashcards", () => {
+    const result = BulkCreateFlashcardsSchema.safeParse({
+      deck_id: validUuid,
+      flashcards: [
+        { front: "Q1", back: "A1" },
+        { front: "Q2", back: "A2" },
+        { front: "Q3", back: "A3" },
+        { front: "Q4", back: "A4" },
+        { front: "Q5", back: "A5" },
+      ],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.flashcards.length).toBe(5);
+    }
+  });
+});
+
+describe("ReviewFlashcardSchema", () => {
+  const validSessionId = "550e8400-e29b-41d4-a716-446655440000";
+
+  it("validates rating 0 (blackout)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 0 });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates rating 1 (again)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 1 });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates rating 2 (hard)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 2 });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates rating 3 (good)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 3 });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates rating 4 (easy)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 4 });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates rating 5 (perfect)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 5 });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid rating (6)", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 6 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects negative rating", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: -1 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects non-integer rating", () => {
+    const result = ReviewFlashcardSchema.safeParse({ rating: 3.5 });
+    expect(result.success).toBe(false);
+  });
+
+  it("validates with optional session_id", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      session_id: validSessionId,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates with optional time_to_answer", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      time_to_answer: 5000,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("validates complete review data", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      session_id: validSessionId,
+      time_to_answer: 3500,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid session_id format", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      session_id: "not-a-uuid",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects negative time_to_answer", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      time_to_answer: -100,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts zero time_to_answer", () => {
+    const result = ReviewFlashcardSchema.safeParse({
+      rating: 4,
+      time_to_answer: 0,
+    });
+    expect(result.success).toBe(true);
   });
 });

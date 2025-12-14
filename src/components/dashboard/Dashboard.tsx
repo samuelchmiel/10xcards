@@ -7,6 +7,8 @@ import { FlashcardForm } from "./FlashcardForm";
 import { AIGenerateForm } from "./AIGenerateForm";
 import { AIPreviewDialog } from "./AIPreviewDialog";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
 
 interface PreviewFlashcard {
   id: string;
@@ -294,9 +296,19 @@ export function Dashboard({ accessToken }: DashboardProps) {
       <main className="flex-1 overflow-auto p-6">
         {selectedDeck ? (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
-              {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">{selectedDeck.name}</h2>
+                {selectedDeck.description && <p className="text-muted-foreground mt-1">{selectedDeck.description}</p>}
+              </div>
+              <Button
+                onClick={() => (window.location.href = `/study/${selectedDeck.id}`)}
+                disabled={flashcards.length === 0}
+                data-testid="study-deck-button"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Study ({flashcards.length})
+              </Button>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">

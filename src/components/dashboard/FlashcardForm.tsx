@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface FlashcardFormProps {
-  deckId: string;
   onSubmit: (front: string, back: string) => Promise<void>;
 }
 
@@ -30,9 +29,7 @@ export function FlashcardForm({ onSubmit }: FlashcardFormProps) {
       setFront("");
       setBack("");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create flashcard"
-      );
+      setError(err instanceof Error ? err.message : "Failed to create flashcard");
     } finally {
       setLoading(false);
     }
@@ -72,10 +69,7 @@ export function FlashcardForm({ onSubmit }: FlashcardFormProps) {
             </div>
           </div>
           {error && (
-            <p
-              className="text-sm text-destructive"
-              data-testid="flashcard-form-error"
-            >
+            <p className="text-sm text-destructive" data-testid="flashcard-form-error">
               {error}
             </p>
           )}

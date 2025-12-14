@@ -39,9 +39,7 @@ describe("CreateDeckSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe(
-        "Name must be 100 characters or less"
-      );
+      expect(result.error.errors[0].message).toBe("Name must be 100 characters or less");
     }
   });
 
@@ -166,9 +164,7 @@ describe("GenerateFlashcardsSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe(
-        "Text must be at least 10 characters"
-      );
+      expect(result.error.errors[0].message).toBe("Text must be at least 10 characters");
     }
   });
 
@@ -180,9 +176,7 @@ describe("GenerateFlashcardsSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe(
-        "Text must be 10000 characters or less"
-      );
+      expect(result.error.errors[0].message).toBe("Text must be 10000 characters or less");
     }
   });
 
@@ -194,9 +188,7 @@ describe("GenerateFlashcardsSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe(
-        "Must generate at least 1 flashcard"
-      );
+      expect(result.error.errors[0].message).toBe("Must generate at least 1 flashcard");
     }
   });
 
@@ -208,9 +200,7 @@ describe("GenerateFlashcardsSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe(
-        "Cannot generate more than 20 flashcards"
-      );
+      expect(result.error.errors[0].message).toBe("Cannot generate more than 20 flashcards");
     }
   });
 

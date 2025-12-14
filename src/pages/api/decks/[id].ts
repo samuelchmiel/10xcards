@@ -22,11 +22,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from("decks")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("decks").select("*").eq("id", id).single();
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -78,32 +74,21 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
   const validation = UpdateDeckSchema.safeParse(body);
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const updateData = validation.data;
   if (Object.keys(updateData).length === 0) {
-    return new Response(
-      JSON.stringify({ error: "No fields to update" }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "No fields to update" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  const { data, error } = await supabase
-    .from("decks")
-    .update(updateData)
-    .eq("id", id)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("decks").update(updateData).eq("id", id).select().single();
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -144,11 +129,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   }
 
   // First check if deck exists (RLS will filter to only user's decks)
-  const { data: existing } = await supabase
-    .from("decks")
-    .select("id")
-    .eq("id", id)
-    .single();
+  const { data: existing } = await supabase.from("decks").select("id").eq("id", id).single();
 
   if (!existing) {
     return new Response(JSON.stringify({ error: "Deck not found" }), {

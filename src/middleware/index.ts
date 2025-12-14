@@ -16,7 +16,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const authHeader = context.request.headers.get("Authorization");
   const accessToken = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
-    : context.cookies.get("sb-access-token")?.value ?? null;
+    : (context.cookies.get("sb-access-token")?.value ?? null);
 
   // Create Supabase client with access token in headers for RLS to work
   const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -27,9 +27,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       detectSessionInUrl: false,
     },
     global: {
-      headers: accessToken
-        ? { Authorization: `Bearer ${accessToken}` }
-        : undefined,
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     },
   });
 
@@ -49,9 +47,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = context.url.pathname;
 
   // Protect routes that require authentication
-  const isProtectedRoute = PROTECTED_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"));
 
   if (isProtectedRoute && !user) {
     return context.redirect("/login");

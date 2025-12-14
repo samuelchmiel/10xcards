@@ -11,10 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-export const supabase: TypedSupabaseClient = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey
-);
+export const supabase: TypedSupabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Server-side client factory for use in API routes
 export function createServerClient(
@@ -24,9 +21,7 @@ export function createServerClient(
 ): TypedSupabaseClient {
   return createClient<Database>(supabaseUrl, supabaseKey, {
     global: {
-      headers: options?.accessToken
-        ? { Authorization: `Bearer ${options.accessToken}` }
-        : undefined,
+      headers: options?.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : undefined,
     },
   });
 }

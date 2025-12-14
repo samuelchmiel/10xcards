@@ -14,10 +14,7 @@ export const GET: APIRoute = async ({ locals }) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from("decks")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("decks").select("*").order("created_at", { ascending: false });
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -55,13 +52,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const validation = CreateDeckSchema.safeParse(body);
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { name, description } = validation.data;

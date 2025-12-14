@@ -4,19 +4,16 @@ export interface GeneratedFlashcard {
 }
 
 interface OpenRouterResponse {
-  choices: Array<{
+  choices: {
     message: {
       content: string;
     };
-  }>;
+  }[];
 }
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-export async function generateFlashcardsFromText(
-  text: string,
-  count: number
-): Promise<GeneratedFlashcard[]> {
+export async function generateFlashcardsFromText(text: string, count: number): Promise<GeneratedFlashcard[]> {
   const apiKey = import.meta.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {

@@ -23,21 +23,14 @@ export const GET: APIRoute = async ({ url, locals }) => {
   const validation = QuerySchema.safeParse({ deck_id: deckId });
 
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Verify deck ownership (RLS handles this, but we check explicitly for 404)
-  const { data: deck } = await supabase
-    .from("decks")
-    .select("id")
-    .eq("id", validation.data.deck_id)
-    .single();
+  const { data: deck } = await supabase.from("decks").select("id").eq("id", validation.data.deck_id).single();
 
   if (!deck) {
     return new Response(JSON.stringify({ error: "Deck not found" }), {
@@ -88,23 +81,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const validation = CreateFlashcardSchema.safeParse(body);
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { deck_id, front, back } = validation.data;
 
   // Verify deck ownership
-  const { data: deck } = await supabase
-    .from("decks")
-    .select("id")
-    .eq("id", deck_id)
-    .single();
+  const { data: deck } = await supabase.from("decks").select("id").eq("id", deck_id).single();
 
   if (!deck) {
     return new Response(JSON.stringify({ error: "Deck not found" }), {
@@ -113,11 +99,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from("flashcards")
-    .insert({ deck_id, front, back })
-    .select()
-    .single();
+  const { data, error } = await supabase.from("flashcards").insert({ deck_id, front, back }).select().single();
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {

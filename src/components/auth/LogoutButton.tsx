@@ -24,12 +24,7 @@ export function LogoutButton() {
   };
 
   return (
-    <Button
-      variant="outline"
-      onClick={handleLogout}
-      disabled={loading}
-      data-testid="logout-button"
-    >
+    <Button variant="outline" onClick={handleLogout} disabled={loading} data-testid="logout-button">
       {loading ? "Logging out..." : "Logout"}
     </Button>
   );

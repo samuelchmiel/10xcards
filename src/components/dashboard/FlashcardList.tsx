@@ -18,11 +18,7 @@ interface FlashcardListProps {
   loading: boolean;
 }
 
-export function FlashcardList({
-  flashcards,
-  onDeleteFlashcard,
-  loading,
-}: FlashcardListProps) {
+export function FlashcardList({ flashcards, onDeleteFlashcard, loading }: FlashcardListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<Flashcard | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -46,10 +42,7 @@ export function FlashcardList({
 
   if (loading) {
     return (
-      <div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        data-testid="flashcard-list-loading"
-      >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="flashcard-list-loading">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-32 w-full" />
         ))}
@@ -59,10 +52,7 @@ export function FlashcardList({
 
   if (flashcards.length === 0) {
     return (
-      <div
-        className="text-center py-12 text-muted-foreground"
-        data-testid="flashcard-list-empty"
-      >
+      <div className="text-center py-12 text-muted-foreground" data-testid="flashcard-list-empty">
         <p className="text-lg mb-2">No flashcards yet</p>
         <p className="text-sm">Add your first flashcard using the form above</p>
       </div>
@@ -71,28 +61,17 @@ export function FlashcardList({
 
   return (
     <>
-      <div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        data-testid="flashcard-list"
-      >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="flashcard-list">
         {flashcards.map((card) => (
-          <Card
-            key={card.id}
-            className="group relative"
-            data-testid={`flashcard-item-${card.id}`}
-          >
+          <Card key={card.id} className="group relative" data-testid={`flashcard-item-${card.id}`}>
             <CardContent className="p-4">
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Front
-                  </p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Front</p>
                   <p className="text-sm line-clamp-2">{card.front}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Back
-                  </p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Back</p>
                   <p className="text-sm line-clamp-2">{card.back}</p>
                 </div>
               </div>
@@ -115,8 +94,7 @@ export function FlashcardList({
           <DialogHeader>
             <DialogTitle>Delete Flashcard</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this flashcard? This action cannot
-              be undone.
+              Are you sure you want to delete this flashcard? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-muted p-3 rounded-md text-sm">

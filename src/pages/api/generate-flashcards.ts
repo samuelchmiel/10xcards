@@ -27,23 +27,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const validation = GenerateFlashcardsSchema.safeParse(body);
   if (!validation.success) {
-    return new Response(
-      JSON.stringify({ error: validation.error.errors }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: validation.error.errors }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { text, deck_id, count } = validation.data;
 
   // Verify deck ownership
-  const { data: deck } = await supabase
-    .from("decks")
-    .select("id")
-    .eq("id", deck_id)
-    .single();
+  const { data: deck } = await supabase.from("decks").select("id").eq("id", deck_id).single();
 
   if (!deck) {
     return new Response(JSON.stringify({ error: "Deck not found" }), {
@@ -76,10 +69,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     back: fc.back,
   }));
 
-  const { data, error } = await supabase
-    .from("flashcards")
-    .insert(flashcardsToInsert)
-    .select();
+  const { data, error } = await supabase.from("flashcards").insert(flashcardsToInsert).select();
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {

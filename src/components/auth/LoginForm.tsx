@@ -2,14 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -70,9 +63,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>{mode === "login" ? "Login" : "Sign Up"}</CardTitle>
         <CardDescription>
-          {mode === "login"
-            ? "Enter your credentials to access your account"
-            : "Create a new account to get started"}
+          {mode === "login" ? "Enter your credentials to access your account" : "Create a new account to get started"}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -124,11 +115,7 @@ export function LoginForm() {
             disabled={loading}
             data-testid={mode === "login" ? "login-button" : "signup-button"}
           >
-            {loading
-              ? "Loading..."
-              : mode === "login"
-                ? "Login"
-                : "Sign Up"}
+            {loading ? "Loading..." : mode === "login" ? "Login" : "Sign Up"}
           </Button>
           <p className="text-sm text-muted-foreground">
             {mode === "login" ? (

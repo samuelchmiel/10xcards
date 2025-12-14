@@ -316,6 +316,9 @@ test.describe("User Flow", () => {
       await createFlashcard(page, "Question 1", "Answer 1");
       await createFlashcard(page, "Question 2", "Answer 2");
 
+      // Wait for database propagation before navigating to study
+      await page.waitForTimeout(1000);
+
       // Click study button (might be "Study All" now with spaced repetition)
       const studyButton = page.getByTestId("study-deck-button");
       await expect(studyButton).toBeEnabled({ timeout: 5000 });
@@ -409,6 +412,9 @@ test.describe("User Flow", () => {
       await createFlashcard(page, "Capital of France?", "Paris");
       await createFlashcard(page, "Capital of Japan?", "Tokyo");
       await createFlashcard(page, "Capital of Brazil?", "Brasilia");
+
+      // Wait for database propagation before navigating to study
+      await page.waitForTimeout(1000);
 
       // Verify flashcard count in study button
       await expect(page.getByTestId("study-deck-button")).toContainText(/Study.*3/);

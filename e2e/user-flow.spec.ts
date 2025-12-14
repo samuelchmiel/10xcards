@@ -329,12 +329,18 @@ test.describe("User Flow", () => {
       // Click study button (might be "Study All" now with spaced repetition)
       const studyButton = page.getByTestId("study-deck-button");
       await expect(studyButton).toBeEnabled({ timeout: 5000 });
+
+      // Log the study button text to verify flashcard count
+      const studyButtonText = await studyButton.textContent();
+      log(`Study button text: ${studyButtonText}`);
+
       log("Clicking study button");
       await studyButton.click();
 
       // Verify study mode loaded - wait for URL change first
       await expect(page).toHaveURL(/\/study\//, { timeout: 10000 });
-      log("Navigated to study page");
+      const studyUrl = page.url();
+      log(`Navigated to study page: ${studyUrl}`);
       await expect(page.getByTestId("study-mode")).toBeVisible({ timeout: 10000 });
 
       // Check if we got the no-cards state or the cards state

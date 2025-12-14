@@ -116,6 +116,44 @@ src/
 | `E2E_TEST_EMAIL` | (Optional) E2E test user email |
 | `E2E_TEST_PASSWORD` | (Optional) E2E test user password |
 
+## E2E Testing
+
+E2E tests use Playwright and require a real test user in Supabase.
+
+### Setup
+
+1. Create a test user in your Supabase project (Authentication > Users > Add user)
+
+2. Add credentials to `.env` or environment:
+```env
+E2E_TEST_EMAIL=test@example.com
+E2E_TEST_PASSWORD=your-test-password
+```
+
+3. For GitHub Actions, add these as repository secrets:
+   - `E2E_TEST_EMAIL`
+   - `E2E_TEST_PASSWORD`
+
+### Running Tests
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run with UI mode
+npm run test:e2e:ui
+```
+
+### Test Coverage
+
+- Authentication (login/logout)
+- Deck management (create, rename, delete)
+- Flashcard management (create, edit, delete)
+- Study mode navigation
+- Dashboard navigation
+
+Tests will skip gracefully if credentials are not configured.
+
 ## License
 
 MIT

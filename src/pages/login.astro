@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { LoginForm } from "@/components/auth/LoginForm";
+
+// Redirect to dashboard if already logged in
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect("/dashboard");
+}
+---
+
+<Layout title="Login - 10xCards">
+  <main class="min-h-screen flex items-center justify-center bg-background p-4">
+    <LoginForm client:load />
+  </main>
+</Layout>

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 interface Props {
   title?: string;
@@ -18,7 +19,10 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <!-- Auth provider keeps cookie in sync with token refreshes -->
+    <AuthProvider client:load>
+      <slot />
+    </AuthProvider>
   </body>
 </html>
 

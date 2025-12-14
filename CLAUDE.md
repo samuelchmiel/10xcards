@@ -48,7 +48,7 @@ src/
 ├── pages/                # Astro pages and routes
 │   └── api/              # API endpoints
 ├── components/           # Astro (static) and React (interactive) components
-│   ├── ui/               # shadcn/ui components
+│   ├── ui/               # shadcn/ui (add via CLI, don't hand-edit)
 │   └── hooks/            # Custom React hooks
 ├── lib/                  # Services and helpers
 │   └── services/         # Business logic services

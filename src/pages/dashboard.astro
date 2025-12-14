@@ -1,0 +1,26 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { LogoutButton } from "@/components/auth/LogoutButton";
+
+const user = Astro.locals.user;
+---
+
+<Layout title="Dashboard - 10xCards">
+  <main class="min-h-screen bg-background" data-testid="dashboard">
+    <header class="border-b">
+      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">10xCards</h1>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-muted-foreground">{user?.email}</span>
+          <LogoutButton client:load />
+        </div>
+      </div>
+    </header>
+    <div class="container mx-auto px-4 py-8">
+      <h2 class="text-xl font-semibold mb-4">Welcome to your Dashboard</h2>
+      <p class="text-muted-foreground">
+        Your flashcard decks will appear here. This page will be fully implemented in issue #6.
+      </p>
+    </div>
+  </main>
+</Layout>

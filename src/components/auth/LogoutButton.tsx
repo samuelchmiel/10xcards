@@ -16,8 +16,8 @@ export function LogoutButton() {
       // Clear the access token cookie
       document.cookie = "sb-access-token=; path=/; max-age=0";
       window.location.href = "/login";
-    } catch (error) {
-      console.error("Logout error:", error);
+    } catch {
+      // Silently handle logout errors
     } finally {
       setLoading(false);
     }

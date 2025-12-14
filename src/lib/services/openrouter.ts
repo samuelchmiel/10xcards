@@ -54,8 +54,6 @@ Example response format:
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("OpenRouter API error:", errorText);
     throw new Error(`AI generation failed: ${response.status}`);
   }
 
@@ -96,8 +94,7 @@ export function parseFlashcardsResponse(content: string): GeneratedFlashcard[] {
     });
 
     return flashcards;
-  } catch (error) {
-    console.error("Failed to parse AI response:", content);
+  } catch {
     throw new Error("Failed to parse AI response");
   }
 }

@@ -120,7 +120,7 @@ export function LoginForm() {
           <p className="text-sm text-muted-foreground">
             {mode === "login" ? (
               <>
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <button
                   type="button"
                   onClick={toggleMode}

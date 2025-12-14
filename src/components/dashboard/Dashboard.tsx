@@ -195,6 +195,33 @@ export function Dashboard({ accessToken }: DashboardProps) {
           />
         </div>
         <DeckForm onSubmit={handleCreateDeck} />
+        {/* AI Generation Quota */}
+        {quota && (
+          <div className="p-3 border-t" data-testid="sidebar-quota">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">AI Generations</span>
+              <span
+                className={`font-medium ${
+                  quota.remaining <= 0
+                    ? "text-destructive"
+                    : quota.remaining <= 5
+                      ? "text-yellow-600"
+                      : "text-foreground"
+                }`}
+              >
+                {quota.remaining}/{quota.limit}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  quota.remaining <= 0 ? "bg-destructive" : quota.remaining <= 5 ? "bg-yellow-500" : "bg-primary"
+                }`}
+                style={{ width: `${(quota.remaining / quota.limit) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Main Content - Flashcards */}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * the sb-access-token cookie in sync with token refreshes.
  * This ensures server-side auth remains valid when tokens are rotated.
  */
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Listen for auth state changes (including token refresh)
     const {

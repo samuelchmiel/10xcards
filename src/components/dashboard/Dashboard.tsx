@@ -31,6 +31,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
   const [quota, setQuota] = useState<UserQuotaInfo | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewCards, setPreviewCards] = useState<PreviewFlashcard[]>([]);
+  const [aiFormClearTrigger, setAiFormClearTrigger] = useState(0);
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
@@ -225,6 +226,9 @@ export function Dashboard({ accessToken }: DashboardProps) {
     const { data } = await response.json();
     setPreviewCards(data);
     setPreviewDialogOpen(true);
+
+    // Refresh quota after generation (quota is consumed at generation time)
+    loadQuota();
   };
 
   const handleSavePreviewCards = async (cards: { front: string; back: string }[]) => {
@@ -248,8 +252,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
     setFlashcards((prev) => [...data, ...prev]);
     setPreviewCards([]);
 
-    // Refresh quota after successful save
-    loadQuota();
+    // Clear the AI form text after successful save
+    setAiFormClearTrigger((prev) => prev + 1);
   };
 
   return (
@@ -335,7 +339,7 @@ export function Dashboard({ accessToken }: DashboardProps) {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <FlashcardForm onSubmit={handleCreateFlashcard} />
-              <AIGenerateForm onGenerate={handleGenerateFlashcards} quota={quota} />
+              <AIGenerateForm onGenerate={handleGenerateFlashcards} quota={quota} clearTrigger={aiFormClearTrigger} />
             </div>
 
             <Separator />

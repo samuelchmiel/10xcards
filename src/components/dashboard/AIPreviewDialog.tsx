@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -94,7 +93,7 @@ export function AIPreviewDialog({ open, onOpenChange, flashcards, onSave }: AIPr
           </span>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0 pr-4" data-testid="preview-cards-list">
+        <div className="overflow-y-auto max-h-[50vh] pr-2" data-testid="preview-cards-list">
           <div className="space-y-4 py-4">
             {cards.map((card) => (
               <div
@@ -138,7 +137,7 @@ export function AIPreviewDialog({ open, onOpenChange, flashcards, onSave }: AIPr
               </div>
             ))}
           </div>
-        </ScrollArea>
+        </div>
 
         {error && (
           <p className="text-sm text-destructive" data-testid="preview-error">

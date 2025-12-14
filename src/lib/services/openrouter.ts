@@ -14,7 +14,7 @@ interface OpenRouterResponse {
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // OpenRouter model ID for Claude 3.5 Haiku
-const MODEL_ID = "anthropic/claude-3-5-haiku-latest";
+const MODEL_ID = "anthropic/claude-3.5-haiku";
 
 export async function generateFlashcardsFromText(
   text: string,

@@ -10,7 +10,14 @@ if (user) {
 ---
 
 <Layout title="Login - 10xCards">
-  <main class="min-h-screen flex items-center justify-center bg-background p-4">
-    <LoginForm client:load />
+  <main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 p-4">
+    <div class="w-full max-w-md">
+      <a href="/" class="block text-center mb-8">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 text-transparent bg-clip-text drop-shadow-lg">
+          10xCards
+        </h1>
+      </a>
+      <LoginForm client:load />
+    </div>
   </main>
 </Layout>

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,13 +9,21 @@ import type { UserQuotaInfo } from "@/db/database.types";
 interface AIGenerateFormProps {
   onGenerate: (text: string, count: number) => Promise<void>;
   quota: UserQuotaInfo | null;
+  clearTrigger?: number;
 }
 
-export function AIGenerateForm({ onGenerate, quota }: AIGenerateFormProps) {
+export function AIGenerateForm({ onGenerate, quota, clearTrigger }: AIGenerateFormProps) {
   const [text, setText] = useState("");
   const [count, setCount] = useState(5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Clear text when clearTrigger changes (after successful save)
+  useEffect(() => {
+    if (clearTrigger && clearTrigger > 0) {
+      setText("");
+    }
+  }, [clearTrigger]);
 
   const isLimitReached = quota !== null && quota.remaining <= 0;
   const maxAllowed = quota ? Math.min(20, quota.remaining) : 20;
@@ -36,7 +44,7 @@ export function AIGenerateForm({ onGenerate, quota }: AIGenerateFormProps) {
 
     try {
       await onGenerate(text.trim(), count);
-      setText("");
+      // Don't clear text here - wait for successful save
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate flashcards");
     } finally {

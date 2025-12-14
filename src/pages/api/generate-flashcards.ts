@@ -88,6 +88,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   }
 
+  // Increment the user's AI generation count (quota is consumed at generation time)
+  const generatedCount = generatedFlashcards.length;
+  const { error: incrementError } = await supabase.rpc("increment_ai_generation_count", {
+    p_user_id: user.id,
+    p_count: generatedCount,
+  });
+
+  if (incrementError) {
+    console.error("Failed to increment quota:", incrementError.message);
+  }
+
   // If preview mode, return generated cards without saving
   if (preview) {
     const previewCards = generatedFlashcards.map((fc, index) => ({
@@ -119,18 +130,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  }
-
-  // Increment the user's AI generation count
-  const actualCount = data?.length || generatedFlashcards.length;
-  const { error: incrementError } = await supabase.rpc("increment_ai_generation_count", {
-    p_user_id: user.id,
-    p_count: actualCount,
-  });
-
-  if (incrementError) {
-    // Log but don't fail the request - flashcards were already created
-    console.error("Failed to increment quota:", incrementError.message);
   }
 
   return new Response(JSON.stringify({ data }), {

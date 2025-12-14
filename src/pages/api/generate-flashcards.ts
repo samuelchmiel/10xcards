@@ -6,7 +6,9 @@ export const prerender = false;
 
 // POST /api/generate-flashcards - Generate flashcards using AI
 export const POST: APIRoute = async ({ request, locals }) => {
-  const { supabase, user } = locals;
+  const { supabase, user, runtime } = locals;
+  // Get API key from Cloudflare runtime env (production) or import.meta.env (local dev)
+  const openRouterApiKey = runtime?.env?.OPENROUTER_API_KEY;
 
   if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -48,7 +50,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Generate flashcards using AI
   let generatedFlashcards;
   try {
-    generatedFlashcards = await generateFlashcardsFromText(text, count);
+    generatedFlashcards = await generateFlashcardsFromText(text, count, openRouterApiKey);
   } catch (error) {
     return new Response(
       JSON.stringify({

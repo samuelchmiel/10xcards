@@ -13,10 +13,14 @@ interface OpenRouterResponse {
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-export async function generateFlashcardsFromText(text: string, count: number): Promise<GeneratedFlashcard[]> {
-  const apiKey = import.meta.env.OPENROUTER_API_KEY;
+export async function generateFlashcardsFromText(
+  text: string,
+  count: number,
+  apiKey?: string
+): Promise<GeneratedFlashcard[]> {
+  const key = apiKey || import.meta.env.OPENROUTER_API_KEY;
 
-  if (!apiKey) {
+  if (!key) {
     throw new Error("OpenRouter API key is not configured");
   }
 
@@ -34,7 +38,7 @@ Example response format:
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
       "HTTP-Referer": "https://10xcards.app",
       "X-Title": "10xCards",

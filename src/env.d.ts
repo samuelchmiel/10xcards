@@ -8,6 +8,11 @@ declare global {
     interface Locals {
       supabase: SupabaseClient<Database>;
       user: User | null;
+      runtime?: {
+        env?: {
+          OPENROUTER_API_KEY?: string;
+        };
+      };
     }
   }
 

@@ -50,7 +50,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     generatedFlashcards = await generateFlashcardsFromText(text, count);
   } catch (error) {
-    console.error("AI generation error:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "AI generation failed",

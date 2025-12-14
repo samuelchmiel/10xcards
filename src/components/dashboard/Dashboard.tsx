@@ -40,8 +40,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
         const { data } = await response.json();
         setDecks(data || []);
       }
-    } catch (error) {
-      console.error("Failed to load decks:", error);
+    } catch {
+      // Silently handle deck loading errors
     } finally {
       setDecksLoading(false);
     }
@@ -56,8 +56,8 @@ export function Dashboard({ accessToken }: DashboardProps) {
           const { data } = await response.json();
           setFlashcards(data || []);
         }
-      } catch (error) {
-        console.error("Failed to load flashcards:", error);
+      } catch {
+        // Silently handle flashcard loading errors
       } finally {
         setFlashcardsLoading(false);
       }

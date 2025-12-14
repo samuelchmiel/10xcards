@@ -68,10 +68,18 @@ export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, lo
           {decks.map((deck) => (
             <div
               key={deck.id}
+              role="button"
+              tabIndex={0}
               className={`group flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-colors ${
                 selectedDeckId === deck.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
               }`}
               onClick={() => onSelectDeck(deck)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectDeck(deck);
+                }
+              }}
               data-testid={`deck-item-${deck.id}`}
             >
               <div className="flex-1 min-w-0">
@@ -109,8 +117,8 @@ export function DeckList({ decks, selectedDeckId, onSelectDeck, onDeleteDeck, lo
           <DialogHeader>
             <DialogTitle>Delete Deck</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deckToDelete?.name}"? This will also delete all flashcards in this deck.
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{deckToDelete?.name}&quot;? This will also delete all flashcards in
+              this deck. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

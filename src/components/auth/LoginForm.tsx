@@ -47,7 +47,8 @@ export function LoginForm() {
 
         // Store access token in cookie for server-side auth
         if (data.session?.access_token) {
-          document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+          const secure = window.location.protocol === "https:" ? "; Secure" : "";
+          document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${secure}`;
         }
 
         window.location.href = "/dashboard";

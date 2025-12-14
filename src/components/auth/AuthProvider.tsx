@@ -16,12 +16,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      const secure = window.location.protocol === "https:" ? "; Secure" : "";
       if (session?.access_token) {
         // Update cookie with new access token
-        document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+        document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${secure}`;
       } else if (event === "SIGNED_OUT") {
         // Clear cookie on sign out
-        document.cookie = "sb-access-token=; path=/; max-age=0";
+        document.cookie = `sb-access-token=; path=/; max-age=0${secure}`;
       }
     });
 

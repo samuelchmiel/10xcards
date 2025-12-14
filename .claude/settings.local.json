@@ -15,7 +15,9 @@
       "Bash(gh pr view:*)",
       "Bash(gh api:*)",
       "Bash(gh pr merge:*)",
-      "Bash(npx shadcn@latest add card input label -y)"
+      "Bash(npx shadcn@latest add card input label -y)",
+      "Bash(npm run dev:*)",
+      "Bash(cat:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

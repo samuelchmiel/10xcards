@@ -18,10 +18,8 @@ function log(message: string) {
   }
 }
 
-// Helper function to login with better error handling
-async function login(page: Page) {
-  log(`Attempting login with email: ${TEST_EMAIL.substring(0, 3)}***`);
-
+// Helper function to perform single login attempt
+async function attemptLogin(page: Page): Promise<boolean> {
   await page.goto("/login");
   const emailInput = page.getByTestId("email-input");
   const passwordInput = page.getByTestId("password-input");
@@ -31,7 +29,7 @@ async function login(page: Page) {
   await expect(emailInput).toBeVisible({ timeout: 10000 });
   await expect(loginButton).toBeVisible();
 
-  // Fill and verify email - click first to ensure focus
+  // Fill and verify email
   await emailInput.click();
   await emailInput.fill(TEST_EMAIL);
   await expect(emailInput).toHaveValue(TEST_EMAIL, { timeout: 5000 });
@@ -44,39 +42,59 @@ async function login(page: Page) {
   log("Filled credentials, clicking login button...");
   await loginButton.click();
 
-  // Wait for redirect to dashboard (primary success indicator)
+  // Wait for redirect to dashboard
   try {
-    await page.waitForURL("**/dashboard", { timeout: 20000 });
-    log("Login successful, verifying dashboard...");
-    await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
-    log("Dashboard verified");
-    return;
+    await page.waitForURL("**/dashboard", { timeout: 15000 });
+    return true;
   } catch {
-    // Check if we're already on dashboard (might have redirected)
+    // Check if we're already on dashboard
     if (page.url().includes("/dashboard")) {
-      log("Already on dashboard, verifying...");
+      return true;
+    }
+    return false;
+  }
+}
+
+// Helper function to login with retry logic
+async function login(page: Page, maxRetries = 3) {
+  log(`Attempting login with email: ${TEST_EMAIL.substring(0, 3)}***`);
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    if (attempt > 1) {
+      log(`Login retry attempt ${attempt}/${maxRetries}...`);
+      // Wait before retry to avoid rate limiting
+      await page.waitForTimeout(1000);
+    }
+
+    const success = await attemptLogin(page);
+
+    if (success) {
+      log("Login successful, verifying dashboard...");
       await expect(page.getByTestId("dashboard-content")).toBeVisible({ timeout: 10000 });
       log("Dashboard verified");
       return;
     }
 
-    // Check for error message
-    const authMessage = page.getByTestId("auth-message");
-    const isVisible = await authMessage.isVisible().catch(() => false);
-    if (isVisible) {
-      const messageText = await authMessage.textContent();
-      log(`Auth error message: ${messageText}`);
-      if (messageText?.includes("Check your email")) {
-        throw new Error(`Login failed: User needs email confirmation. Message: ${messageText}`);
+    // Check for error message on last attempt
+    if (attempt === maxRetries) {
+      const authMessage = page.getByTestId("auth-message");
+      const isVisible = await authMessage.isVisible().catch(() => false);
+      if (isVisible) {
+        const messageText = await authMessage.textContent();
+        log(`Auth error message: ${messageText}`);
+        if (messageText?.includes("Check your email")) {
+          throw new Error(`Login failed: User needs email confirmation. Message: ${messageText}`);
+        }
+        throw new Error(`Login failed with error: ${messageText}`);
       }
-      throw new Error(`Login failed with error: ${messageText}`);
+
+      const currentUrl = page.url();
+      log(`Login failed after ${maxRetries} attempts. Current URL: ${currentUrl}`);
+      await page.screenshot({ path: "test-results/login-timeout.png" });
+      throw new Error(`Login timeout after ${maxRetries} attempts - stayed on ${currentUrl}.`);
     }
 
-    // Take screenshot for debugging
-    const currentUrl = page.url();
-    log(`Login failed. Current URL: ${currentUrl}`);
-    await page.screenshot({ path: "test-results/login-timeout.png" });
-    throw new Error(`Login timeout - stayed on ${currentUrl}. Check if credentials are correct and user exists.`);
+    log(`Login attempt ${attempt} failed, will retry...`);
   }
 }
 

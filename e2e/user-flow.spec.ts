@@ -23,13 +23,26 @@ async function login(page: Page) {
   log(`Attempting login with email: ${TEST_EMAIL.substring(0, 3)}***`);
 
   await page.goto("/login");
-  await expect(page.getByTestId("email-input")).toBeVisible({ timeout: 10000 });
+  const emailInput = page.getByTestId("email-input");
+  const passwordInput = page.getByTestId("password-input");
+  const loginButton = page.getByTestId("login-button");
 
-  await page.getByTestId("email-input").fill(TEST_EMAIL);
-  await page.getByTestId("password-input").fill(TEST_PASSWORD);
+  // Wait for form to be ready
+  await expect(emailInput).toBeVisible({ timeout: 10000 });
+  await expect(loginButton).toBeVisible();
+
+  // Fill and verify email - click first to ensure focus
+  await emailInput.click();
+  await emailInput.fill(TEST_EMAIL);
+  await expect(emailInput).toHaveValue(TEST_EMAIL, { timeout: 2000 });
+
+  // Fill and verify password
+  await passwordInput.click();
+  await passwordInput.fill(TEST_PASSWORD);
+  await expect(passwordInput).toHaveValue(TEST_PASSWORD, { timeout: 2000 });
 
   log("Filled credentials, clicking login button...");
-  await page.getByTestId("login-button").click();
+  await loginButton.click();
 
   // Wait for either success (redirect to dashboard) or error message
   const dashboardUrl = page.waitForURL("**/dashboard", { timeout: 15000 });
@@ -74,15 +87,26 @@ async function login(page: Page) {
 async function createDeck(page: Page, name: string, description = "E2E test deck") {
   log(`Creating deck: ${name}`);
 
-  // Wait for form to be ready
-  await expect(page.getByTestId("deck-name-input")).toBeVisible();
+  const nameInput = page.getByTestId("deck-name-input");
+  const descInput = page.getByTestId("deck-description-input");
+  const createButton = page.getByTestId("create-deck-button");
 
-  await page.getByTestId("deck-name-input").fill(name);
-  await page.getByTestId("deck-description-input").fill(description);
+  // Wait for form to be ready
+  await expect(nameInput).toBeVisible();
+
+  // Fill and verify name
+  await nameInput.click();
+  await nameInput.fill(name);
+  await expect(nameInput).toHaveValue(name, { timeout: 2000 });
+
+  // Fill and verify description
+  await descInput.click();
+  await descInput.fill(description);
+  await expect(descInput).toHaveValue(description, { timeout: 2000 });
 
   // Wait for button to be enabled (name is filled)
-  await expect(page.getByTestId("create-deck-button")).toBeEnabled({ timeout: 5000 });
-  await page.getByTestId("create-deck-button").click();
+  await expect(createButton).toBeEnabled({ timeout: 5000 });
+  await createButton.click();
 
   // Wait for deck to appear in the list - use more specific selector
   const deckItem = page.locator(`[data-testid^="deck-item-"]`).filter({ hasText: name });
@@ -100,11 +124,22 @@ async function createDeck(page: Page, name: string, description = "E2E test deck
 async function createFlashcard(page: Page, front: string, back: string) {
   log(`Creating flashcard: ${front.substring(0, 20)}...`);
 
-  await page.getByTestId("flashcard-front-input").fill(front);
-  await page.getByTestId("flashcard-back-input").fill(back);
+  const frontInput = page.getByTestId("flashcard-front-input");
+  const backInput = page.getByTestId("flashcard-back-input");
+  const createButton = page.getByTestId("create-flashcard-button");
 
-  await expect(page.getByTestId("create-flashcard-button")).toBeEnabled();
-  await page.getByTestId("create-flashcard-button").click();
+  // Fill and verify front
+  await frontInput.click();
+  await frontInput.fill(front);
+  await expect(frontInput).toHaveValue(front, { timeout: 2000 });
+
+  // Fill and verify back
+  await backInput.click();
+  await backInput.fill(back);
+  await expect(backInput).toHaveValue(back, { timeout: 2000 });
+
+  await expect(createButton).toBeEnabled();
+  await createButton.click();
 
   // Wait for flashcard to appear in list
   const flashcardItem = page.locator(`[data-testid^="flashcard-item-"]`).filter({ hasText: front });

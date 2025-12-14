@@ -49,6 +49,11 @@ export const BulkCreateFlashcardsSchema = z.object({
   ai_generated: z.boolean().optional().default(false),
 });
 
+// Review flashcard schema (SM-2 spaced repetition)
+export const ReviewFlashcardSchema = z.object({
+  rating: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+});
+
 // Type exports
 export type CreateDeckInput = z.infer<typeof CreateDeckSchema>;
 export type UpdateDeckInput = z.infer<typeof UpdateDeckSchema>;
@@ -56,3 +61,4 @@ export type CreateFlashcardInput = z.infer<typeof CreateFlashcardSchema>;
 export type UpdateFlashcardInput = z.infer<typeof UpdateFlashcardSchema>;
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsSchema>;
 export type BulkCreateFlashcardsInput = z.infer<typeof BulkCreateFlashcardsSchema>;
+export type ReviewFlashcardInput = z.infer<typeof ReviewFlashcardSchema>;

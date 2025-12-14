@@ -8,6 +8,7 @@ const { deckId } = Astro.params;
 const user = Astro.locals.user;
 const supabase = Astro.locals.supabase;
 const accessToken = Astro.cookies.get("sb-access-token")?.value ?? "";
+const dueOnly = Astro.url.searchParams.get("due") === "true";
 
 if (!user) {
   return Astro.redirect("/login");
@@ -24,14 +25,29 @@ if (!deck) {
   return Astro.redirect("/dashboard");
 }
 
-// Fetch flashcards for the deck
-const { data: flashcards } = await supabase
+// Fetch flashcards for the deck (with SM-2 fields for spaced repetition)
+let query = supabase
   .from("flashcards")
-  .select("id, front, back")
-  .eq("deck_id", deckId)
-  .order("created_at", { ascending: true });
+  .select("id, front, back, easiness_factor, interval_days, repetitions, next_review_date")
+  .eq("deck_id", deckId);
+
+// Filter for due cards if requested
+if (dueOnly) {
+  const today = new Date().toISOString().split("T")[0];
+  query = query.or(`next_review_date.is.null,next_review_date.lte.${today}`);
+}
+
+const { data: flashcards } = await query.order("created_at", { ascending: true });
+
+const studyTitle = dueOnly ? `Review Due - ${deck.name}` : `Study - ${deck.name}`;
 ---
 
-<Layout title={`Study - ${deck.name} - 10xCards`}>
-  <StudyMode client:load deckName={deck.name} flashcards={flashcards || []} accessToken={accessToken} />
+<Layout title={`${studyTitle} - 10xCards`}>
+  <StudyMode
+    client:load
+    deckName={deck.name}
+    flashcards={flashcards || []}
+    accessToken={accessToken}
+    spacedRepetitionMode={true}
+  />
 </Layout>

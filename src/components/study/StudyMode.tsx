@@ -2,17 +2,24 @@ import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Shuffle, X, RotateCcw } from "lucide-react";
+import { RATING_OPTIONS } from "@/lib/services/spaced-repetition";
+import type { ReviewRating } from "@/db/database.types";
 
 interface StudyFlashcard {
   id: string;
   front: string;
   back: string;
+  easiness_factor?: number;
+  interval_days?: number;
+  repetitions?: number;
+  next_review_date?: string | null;
 }
 
 interface StudyModeProps {
   deckName: string;
   flashcards: StudyFlashcard[];
   accessToken: string;
+  spacedRepetitionMode?: boolean;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -24,11 +31,18 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export function StudyMode({ deckName, flashcards: initialFlashcards }: StudyModeProps) {
+export function StudyMode({
+  deckName,
+  flashcards: initialFlashcards,
+  accessToken,
+  spacedRepetitionMode = true,
+}: StudyModeProps) {
   const [flashcards, setFlashcards] = useState<StudyFlashcard[]>(initialFlashcards);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewedCount, setReviewedCount] = useState(0);
 
   const currentCard = flashcards[currentIndex];
   const totalCards = flashcards.length;
@@ -70,6 +84,44 @@ export function StudyMode({ deckName, flashcards: initialFlashcards }: StudyMode
     window.location.assign("/dashboard");
   }, []);
 
+  const handleRate = useCallback(
+    async (rating: ReviewRating) => {
+      if (!currentCard || isSubmittingReview) return;
+
+      setIsSubmittingReview(true);
+      try {
+        const response = await fetch(`/api/flashcards/${currentCard.id}/review`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ rating }),
+        });
+
+        if (!response.ok) {
+          console.error("Failed to submit review");
+        }
+
+        setReviewedCount((prev) => prev + 1);
+
+        // Move to next card or finish
+        if (currentIndex < totalCards - 1) {
+          setCurrentIndex((prev) => prev + 1);
+          setIsFlipped(false);
+        } else {
+          // All cards reviewed - show completion or exit
+          handleExit();
+        }
+      } catch (error) {
+        console.error("Error submitting review:", error);
+      } finally {
+        setIsSubmittingReview(false);
+      }
+    },
+    [currentCard, currentIndex, totalCards, accessToken, isSubmittingReview, handleExit]
+  );
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -77,17 +129,25 @@ export function StudyMode({ deckName, flashcards: initialFlashcards }: StudyMode
         e.preventDefault();
         handleFlip();
       } else if (e.key === "ArrowRight" || e.key === "n") {
-        handleNext();
+        if (!spacedRepetitionMode || !isFlipped) {
+          handleNext();
+        }
       } else if (e.key === "ArrowLeft" || e.key === "p") {
         handlePrevious();
       } else if (e.key === "Escape") {
         handleExit();
+      } else if (spacedRepetitionMode && isFlipped) {
+        // Rating shortcuts when card is flipped (1=Again, 2=Hard, 3=Good, 4=Easy)
+        if (e.key === "1") handleRate(1);
+        else if (e.key === "2") handleRate(3);
+        else if (e.key === "3") handleRate(4);
+        else if (e.key === "4") handleRate(5);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleFlip, handleNext, handlePrevious, handleExit]);
+  }, [handleFlip, handleNext, handlePrevious, handleExit, handleRate, spacedRepetitionMode, isFlipped]);
 
   if (!hasCards) {
     return (
@@ -195,6 +255,32 @@ export function StudyMode({ deckName, flashcards: initialFlashcards }: StudyMode
           </div>
         </div>
 
+        {/* Rating Buttons (shown when flipped in spaced repetition mode) */}
+        {spacedRepetitionMode && isFlipped && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-6" data-testid="rating-buttons">
+            {RATING_OPTIONS.map((option, index) => (
+              <Button
+                key={option.rating}
+                variant={option.color === "destructive" ? "destructive" : "outline"}
+                size="lg"
+                onClick={() => handleRate(option.rating)}
+                disabled={isSubmittingReview}
+                className={`min-w-[80px] ${
+                  option.color === "warning"
+                    ? "border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                    : option.color === "success"
+                      ? "border-green-500 text-green-600 hover:bg-green-50"
+                      : ""
+                }`}
+                data-testid={`rating-${option.label.toLowerCase()}`}
+              >
+                <span className="text-xs opacity-60 mr-1">{index + 1}</span>
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {/* Navigation Controls */}
         <div className="flex items-center gap-4 mt-8">
           <Button
@@ -224,22 +310,35 @@ export function StudyMode({ deckName, flashcards: initialFlashcards }: StudyMode
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleNext}
-            disabled={currentIndex === totalCards - 1}
-            data-testid="next-button"
-          >
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+          {!spacedRepetitionMode || !isFlipped ? (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleNext}
+              disabled={currentIndex === totalCards - 1}
+              data-testid="next-button"
+            >
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : (
+            <div className="w-[100px]" /> // Placeholder to maintain layout
+          )}
         </div>
 
         {/* Keyboard Shortcuts Help */}
         <p className="text-xs text-muted-foreground mt-6">
-          Keyboard: Space/Enter to flip, Arrow keys to navigate, Esc to exit
+          {spacedRepetitionMode && isFlipped
+            ? "Keyboard: 1=Again, 2=Hard, 3=Good, 4=Easy, Esc to exit"
+            : "Keyboard: Space/Enter to flip, Arrow keys to navigate, Esc to exit"}
         </p>
+
+        {/* Review Progress */}
+        {spacedRepetitionMode && reviewedCount > 0 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Reviewed: {reviewedCount} / {totalCards}
+          </p>
+        )}
       </main>
     </div>
   );

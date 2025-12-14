@@ -74,6 +74,10 @@ export interface Database {
           deck_id: string;
           front: string;
           back: string;
+          easiness_factor: number;
+          interval_days: number;
+          repetitions: number;
+          next_review_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -82,6 +86,10 @@ export interface Database {
           deck_id: string;
           front: string;
           back: string;
+          easiness_factor?: number;
+          interval_days?: number;
+          repetitions?: number;
+          next_review_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -90,6 +98,10 @@ export interface Database {
           deck_id?: string;
           front?: string;
           back?: string;
+          easiness_factor?: number;
+          interval_days?: number;
+          repetitions?: number;
+          next_review_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -133,4 +145,14 @@ export interface UserQuotaInfo {
   count: number;
   remaining: number;
   limit: number;
+}
+
+// SM-2 Spaced Repetition Types
+export type ReviewRating = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface SM2Result {
+  easiness_factor: number;
+  interval_days: number;
+  repetitions: number;
+  next_review_date: string;
 }

@@ -13,6 +13,34 @@ AI-powered educational flashcard generator. Create flashcard decks, add cards ma
 - **Statistics** - Track study streak, accuracy, reviews per day, deck progress, and time studied
 - **Usage Limits** - 75 AI-generated flashcards lifetime limit per user
 
+## Screenshots
+
+### Landing Page
+![Landing Page](public/screenshots/landing_page.png)
+
+### Authentication
+| Sign Up | Login |
+|---------|-------|
+| ![Sign Up](public/screenshots/sign_up_page.png) | ![Login](public/screenshots/login_page.png) |
+
+### Dashboard
+![Dashboard](public/screenshots/dashboard_page.png)
+
+### Flashcard Management
+| Manual Entry | AI-Generated Cards Review |
+|--------------|---------------------------|
+| ![Manual Fill](public/screenshots/manual_fill_data.png) | ![AI Review](public/screenshots/review_ai_generated_cards_page.png) |
+
+### Study Mode
+| Review | Study |
+|--------|-------|
+| ![Review](public/screenshots/review_page.png) | ![Study Mode](public/screenshots/study_mode_page.png) |
+
+### Statistics & Profile
+| Stats | Profile |
+|-------|---------|
+| ![Stats](public/screenshots/stats_page.png) | ![Profile](public/screenshots/profile.png) |
+
 ## Tech Stack
 
 - **Framework**: [Astro 5](https://astro.build/) with SSR (Cloudflare adapter)
